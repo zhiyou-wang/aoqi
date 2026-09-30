@@ -37,3 +37,72 @@ class FilterDict(BaseModel):
     jobs: List[FilterOption] = Field(default_factory=list)
     eras: List[FilterOption] = Field(default_factory=list)
     positions: List[FilterOption] = Field(default_factory=list)
+
+
+# ---- 详情聚合 ----
+
+class SpiritJobDetail(BaseModel):
+    """精灵职业（带优先级）。"""
+
+    job_id: int
+    job_name: str
+    job_desc: Optional[str] = None
+    priority_no: Optional[int] = None
+
+
+class SpiritSkillDetail(BaseModel):
+    """精灵技能（带槽位与等级文案）。"""
+
+    slot_code: str
+    slot_name: Optional[str] = None
+    skill_id: Optional[int] = None
+    skill_name: Optional[str] = None
+    skill_type: Optional[str] = None
+    power_type: Optional[str] = None
+    levels: List[dict] = Field(default_factory=list)
+
+
+class SpiritSkinDetail(BaseModel):
+    """精灵可穿戴皮肤。"""
+
+    form_skin_id: int
+    skin_id: int
+    skin_name: Optional[str] = None
+    grade_code: Optional[str] = None
+    grade_name: Optional[str] = None
+    is_base: Optional[str] = None
+
+
+class SpiritDetail(BaseModel):
+    """精灵详情（档案 + 技能 + 皮肤 + 进化 + 羁绊聚合）。"""
+
+    race_id: int
+    spirit_name: str
+    rarity_name: Optional[str] = None
+    position_name: Optional[str] = None
+    lineage_race_id: Optional[int] = None
+    book_id: Optional[str] = None
+    # 档案
+    gender_code: Optional[str] = None
+    birthday_text: Optional[str] = None
+    height_text: Optional[str] = None
+    weight_text: Optional[str] = None
+    hobby_text: Optional[str] = None
+    character_text: Optional[str] = None
+    birthplace_text: Optional[str] = None
+    self_desc: Optional[str] = None
+    resume_text: Optional[str] = None
+    strategy_text: Optional[str] = None
+    introduce_text: Optional[str] = None
+    # 五维
+    scores: List[int] = Field(default_factory=list)
+    # 关联
+    jobs: List[SpiritJobDetail] = Field(default_factory=list)
+    elements: List[str] = Field(default_factory=list)
+    eras: List[str] = Field(default_factory=list)
+    skills: List[SpiritSkillDetail] = Field(default_factory=list)
+    skins: List[SpiritSkinDetail] = Field(default_factory=list)
+    evolves_from: List[int] = Field(default_factory=list)
+    evolves_to: List[int] = Field(default_factory=list)
+    bonds_form: List[dict] = Field(default_factory=list)
+    bonds_collect: List[dict] = Field(default_factory=list)

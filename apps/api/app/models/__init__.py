@@ -1,5 +1,33 @@
 """SQLAlchemy ORM 模型（映射 AOQI_* 表）。
 
-注意：模型按域拆分到本目录下独立文件，而非单一 models.py。
-新增域时：新建 xxx.py，定义模型类，再在 __init__.py 导出。
+按域拆分，全部从本包导出，供服务层 import。
+新增域时：新建 xxx.py，在这里导出。
 """
+from app.models.base import Base
+from app.models.bond import BondCollect, BondForm, BondFormMember, Evolution
+from app.models.skill import Skill, SkillLevel, SkillSlot, SpiritSkill
+from app.models.skin import Skin, SkinGrade, SpiritSkin
+from app.models.spirit import (
+    Element,
+    Era,
+    Job,
+    Position,
+    Rarity,
+    Spirit,
+    SpiritElement,
+    SpiritEra,
+    SpiritJob,
+)
+
+__all__ = [
+    "Base",
+    # spirit
+    "Spirit", "Rarity", "Element", "Era", "Position", "Job",
+    "SpiritJob", "SpiritElement", "SpiritEra",
+    # skill
+    "Skill", "SkillLevel", "SkillSlot", "SpiritSkill",
+    # skin
+    "Skin", "SkinGrade", "SpiritSkin",
+    # bond & evolution
+    "Evolution", "BondForm", "BondFormMember", "BondCollect",
+]

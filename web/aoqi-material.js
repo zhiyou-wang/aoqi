@@ -162,7 +162,8 @@
   }
 
   /* 超椭圆角 SDF（连续圆角）
-     px,py: 中心坐标；hx,hy: 半轴；r: 圆角半径；n: 超椭圆指数 */
+     px,py: 中心坐标；hx,hy: 半轴；r: 圆角半径；n: 超椭圆指数
+     坐标与 hx/hy/r 同单位（像素或归一化均可）。 */
   function roundedRectSDF(px, py, hx, hy, r, n) {
     const ax = Math.abs(px);
     const ay = Math.abs(py);
@@ -175,6 +176,22 @@
     }
     // 内部与边缘区域
     return Math.min(Math.max(dx, dy), 0) + Math.hypot(Math.max(dx, 0), Math.max(dy, 0));
+  }
+
+  /* SDF 数值梯度（= 表面法线方向），用于物理折射。
+     对齐 AndroidLiquidGlass-kmp / kube.io 的 gradSdRoundedRect。 */
+  function gradRoundedRectSDF(px, py, hx, hy, r, n) {
+    const eps = 1.0;
+    const dx = (roundedRectSDF(px + eps, py, hx, hy, r, n) - roundedRectSDF(px - eps, py, hx, hy, r, n)) / (2 * eps);
+    const dy = (roundedRectSDF(px, py + eps, hx, hy, r, n) - roundedRectSDF(px, py - eps, hx, hy, r, n)) / (2 * eps);
+    return [dx, dy];
+  }
+
+  /* 凸圆折射剖面（kube.io 的 Convex Circle）。
+     边缘位移最大，向中心递减到 0，物理上与凸透镜一致。 */
+  function circleMap(x) {
+    const t = clamp(x, 0, 1);
+    return 1 - Math.sqrt(1 - t * t);
   }
 
   /* ---------- 超椭圆裁切（clip-path） ---------- */
@@ -255,27 +272,52 @@
     const img = ctx.createImageData(w, h);
     const data = img.data;
 
-    const hx = 0.5;
-    const hy = 0.5;
-    const rr = clamp(radius / Math.min(w, h), 0.02, 0.5);
+    // 像素坐标系：中心在 (0,0)，半轴 hx/hy，圆角 rrPx
+    const hx = w / 2;
+    const hy = h / 2;
+    const rrPx = radius;
+    // 折射带高度（像素）：thickness 越大折射越集中在边缘（玻璃越「厚」）
+    const refractionHeightNorm = 0.28 * (1 - (thickness - 0.6) * 0.9);
+    const refractionHeightPx = refractionHeightNorm * Math.min(w, h) / 2;
+    // 基础折射位移量（像素）：profile=1 时的位移，之后由 displacement 倍率放大
+    const baseRefractionPx = 24;
+
     const raw = new Float32Array(w * h * 2);
     let maxScale = 0;
     let idx = 0;
 
     for (let y = 0; y < h; y += 1) {
       for (let x = 0; x < w; x += 1) {
-        const ux = x / w - 0.5;
-        const uy = y / h - 0.5;
-        const sdf = roundedRectSDF(ux, uy, hx, hy, rr, roundness);
-        // 折射带：smoothstep(edge, 0, sdf - band)，thickness 控制带宽度
-        const disp = smoothstep(thickness, 0, sdf - (1 - thickness) * 0.28);
-        const scaled = smoothstep(0, 1, disp);
-        // 中心向心（凸透镜中心放大）+ 边缘鼓起（沿法线再外推）
-        const dx = (ux * scaled * w - x) + (ux * bulge * (1 - scaled));
-        const dy = (uy * scaled * h - y) + (uy * bulge * (1 - scaled));
-        raw[idx] = dx;
-        raw[idx + 1] = dy;
-        maxScale = Math.max(maxScale, Math.abs(dx), Math.abs(dy));
+        const px = x - hx;
+        const py = y - hy;
+        const sd = roundedRectSDF(px, py, hx, hy, rrPx, roundness);
+
+        let ox = 0;
+        let oy = 0;
+        if (sd < 0) {
+          const distToEdge = -sd; // 到边缘的距离（像素），0=边缘
+          if (distToEdge < refractionHeightPx) {
+            // 折射带内：凸圆剖面，边缘位移最大、向中心递减
+            const t = distToEdge / refractionHeightPx; // 0=边缘，1=带末端
+            const profile = circleMap(1 - t);
+            const d = profile * baseRefractionPx;
+
+            // 沿 SDF 梯度（法线）方向偏移，物理正确
+            const g = gradRoundedRectSDF(px, py, hx, hy, rrPx, roundness);
+            const gl = Math.hypot(g[0], g[1]) || 1;
+            ox = (g[0] / gl) * d;
+            oy = (g[1] / gl) * d;
+
+            // 边缘鼓起：沿法线额外外推
+            if (bulge) {
+              ox += (g[0] / gl) * bulge * (1 - t);
+              oy += (g[1] / gl) * bulge * (1 - t);
+            }
+          }
+        }
+        raw[idx] = ox;
+        raw[idx + 1] = oy;
+        maxScale = Math.max(maxScale, Math.abs(ox), Math.abs(oy));
         idx += 2;
       }
     }
@@ -321,75 +363,103 @@
 
   /* ---------- 神迹晶体（球面真折射） ----------
      凸透镜球面：中心放大（采样向外扩散），边缘压缩（采样向内，
-     在边界处形成球体折射环）。位移图是径向偏移场。 */
+     在边界处形成球体折射环）。位移图是径向偏移场。
+     支持实时调参（update）与色散。 */
   function crystal(el, opts) {
     opts = opts || {};
-    const w = Math.max(2, Math.round(el.offsetWidth));
-    const h = Math.max(2, Math.round(el.offsetHeight));
-    const magnification = opts.magnification || 0.18; // 中心放大强度
-    const compression = opts.compression || 0.10;     // 边缘压缩强度
-    const displacement = opts.displacement || 0.6;    // 整体位移倍率
+    const state = {
+      magnification: opts.magnification || 0.18,   // 中心放大强度
+      compression: opts.compression || 0.10,       // 边缘压缩强度
+      displacement: opts.displacement || 0.6,      // 整体位移倍率
+      dispersion: opts.dispersion || 0,            // 色散强度
+    };
+    let filterId = null;
 
-    const id = 'aq-crystal-' + Math.random().toString(36).slice(2, 9);
+    function apply() {
+      if (filterId) {
+        document.getElementById(filterId)?.remove();
+        filterId = null;
+      }
+      const w = Math.max(2, Math.round(el.offsetWidth));
+      const h = Math.max(2, Math.round(el.offsetHeight));
+      const magnification = state.magnification;
+      const compression = state.compression;
+      const displacement = state.displacement;
+      const dispersion = state.dispersion;
+      filterId = 'aq-crystal-' + Math.random().toString(36).slice(2, 9);
+      const id = filterId;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    const img = ctx.createImageData(w, h);
-    const data = img.data;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      const img = ctx.createImageData(w, h);
+      const data = img.data;
 
-    const cx = w / 2;
-    const cy = h / 2;
-    const R = Math.min(w, h) / 2;
+      const cx = w / 2;
+      const cy = h / 2;
+      const R = Math.min(w, h) / 2;
 
-    const raw = new Float32Array(w * h * 2);
-    let maxScale = 0;
-    let idx = 0;
+      const raw = new Float32Array(w * h * 2);
+      let maxScale = 0;
+      let idx = 0;
 
-    for (let y = 0; y < h; y += 1) {
-      for (let x = 0; x < w; x += 1) {
-        const dx = x - cx;
-        const dy = y - cy;
-        const r = Math.hypot(dx, dy);
-        let ox = 0;
-        let oy = 0;
-        if (r < R && r > 0.5) {
-          const t = r / R; // 0..1，0=中心，1=边缘
-          // 中心放大 → 边缘压缩 的径向偏移
-          const m = magnification * (1 - t) * (1 - t) - compression * t;
-          const u = m * R;
-          ox = (dx / r) * u;
-          oy = (dy / r) * u;
+      for (let y = 0; y < h; y += 1) {
+        for (let x = 0; x < w; x += 1) {
+          const dx = x - cx;
+          const dy = y - cy;
+          const r = Math.hypot(dx, dy);
+          let ox = 0;
+          let oy = 0;
+          if (r < R && r > 0.5) {
+            const t = r / R; // 0..1，0=中心，1=边缘
+            // 中心放大 → 边缘压缩 的径向偏移
+            const m = magnification * (1 - t) * (1 - t) - compression * t;
+            const u = m * R;
+            ox = (dx / r) * u;
+            oy = (dy / r) * u;
+          }
+          raw[idx] = ox;
+          raw[idx + 1] = oy;
+          maxScale = Math.max(maxScale, Math.abs(ox), Math.abs(oy));
+          idx += 2;
         }
-        raw[idx] = ox;
-        raw[idx + 1] = oy;
-        maxScale = Math.max(maxScale, Math.abs(ox), Math.abs(oy));
+      }
+      maxScale = Math.max(1, maxScale);
+
+      idx = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = clamp((raw[idx] / maxScale + 0.5) * 255, 0, 255);
+        data[i + 1] = clamp((raw[idx + 1] / maxScale + 0.5) * 255, 0, 255);
+        data[i + 2] = 0;
+        data[i + 3] = 255;
         idx += 2;
       }
+      ctx.putImageData(img, 0, 0);
+      const dataUrl = canvas.toDataURL();
+
+      // 用带色散的滤镜（dispersion=0 时等价于普通位移）
+      buildLensFilter(id, w, h, dataUrl, (maxScale * displacement).toFixed(2), dispersion);
+
+      el.style.backdropFilter = `url(#${id}) blur(0.3px) contrast(1.1) brightness(1.06) saturate(1.15)`;
+      el.style.webkitBackdropFilter = el.style.backdropFilter;
     }
-    maxScale = Math.max(1, maxScale);
 
-    idx = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = clamp((raw[idx] / maxScale + 0.5) * 255, 0, 255);
-      data[i + 1] = clamp((raw[idx + 1] / maxScale + 0.5) * 255, 0, 255);
-      data[i + 2] = 0;
-      data[i + 3] = 255;
-      idx += 2;
-    }
-    ctx.putImageData(img, 0, 0);
-    const dataUrl = canvas.toDataURL();
-
-    buildDisplacementFilter(id, w, h, dataUrl, (maxScale * displacement).toFixed(2));
-
-    el.style.backdropFilter = `url(#${id}) blur(0.3px) contrast(1.1) brightness(1.06) saturate(1.15)`;
-    el.style.webkitBackdropFilter = el.style.backdropFilter;
+    apply();
 
     return {
-      id,
+      get id() {
+        return filterId;
+      },
+      get state() {
+        return state;
+      },
+      update(next) {
+        Object.assign(state, next || {});
+        apply();
+      },
       destroy() {
-        document.getElementById(id)?.remove();
+        if (filterId) document.getElementById(filterId)?.remove();
       },
     };
   }
@@ -702,6 +772,7 @@
       const displacement = parseFloat(el.dataset.crystal) || 0.6;
       const inst = crystal(el, { displacement });
       lensInstances.push(inst);
+      el.__aqCrystal = inst;
     });
 
     // 长虹玻璃（竖棱折射）

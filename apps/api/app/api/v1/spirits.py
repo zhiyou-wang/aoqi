@@ -42,3 +42,12 @@ def list_spirits(
 def filters(db: Session = Depends(get_db)):
     """筛选项字典：从数据库字典表动态返回。"""
     return ok(data=spirit_service.get_filters(db).model_dump())
+
+
+@router.get("/{race_id}")
+def spirit_detail(race_id: int, db: Session = Depends(get_db)):
+    """精灵详情：档案 + 技能 + 皮肤 + 进化 + 羁绊聚合。"""
+    detail = spirit_service.get_detail(db, race_id)
+    if detail is None:
+        return ok(data=None, message="not found")
+    return ok(data=detail.model_dump())

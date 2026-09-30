@@ -4,7 +4,14 @@
  * 契约类型来自 @aoqi/shared，与后端 Pydantic 模型一致。
  * 前端 dev 通过 vite proxy 转发到后端，无需 CORS。
  */
-import type { ApiResponse, FilterDict, SpiritListQuery, SpiritSummary } from '@aoqi/shared';
+import type {
+  ApiResponse,
+  FilterDict,
+  MaterialConfig,
+  SpiritDetail,
+  SpiritListQuery,
+  SpiritSummary,
+} from '@aoqi/shared';
 
 const BASE = '/api/v1';
 
@@ -32,4 +39,14 @@ export function fetchSpirits(query: SpiritListQuery) {
 /** 筛选项字典 */
 export function fetchFilters() {
   return request<FilterDict>('/spirits/filters');
+}
+
+/** 精灵详情 */
+export function fetchSpiritDetail(raceId: number) {
+  return request<SpiritDetail>(`/spirits/${raceId}`);
+}
+
+/** 材质配置 */
+export function fetchMaterialConfig() {
+  return request<MaterialConfig>('/material-config');
 }
