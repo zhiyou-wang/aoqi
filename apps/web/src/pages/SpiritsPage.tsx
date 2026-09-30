@@ -1,30 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { fetchFilters, fetchSpirits } from '../api/client';
+import { useFetch } from '../lib/useFetch';
 
 /**
- * 图鉴列表页（M1 最小验证版）。
- * 通过 TanStack Query 拉取后端数据，验证前后端数据通道。
- * 后续在此页上叠加完整筛选、虚拟滚动与设计系统。
+ * 图鉴列表页。
+ * 使用轻量 useFetch（替代 TanStack Query），低配客户友好。
  */
 export function SpiritsPage() {
   const [page, setPage] = useState(1);
-  const { data: filters } = useQuery({
-    queryKey: ['spirits', 'filters'],
-    queryFn: fetchFilters,
-  });
 
-  const { data: list } = useQuery({
-    queryKey: ['spirits', page],
-    queryFn: () => fetchSpirits({ page, size: 20 }),
-  });
+  const { data: filters } = useFetch(fetchFilters, []);
+  const { data: list, loading } = useFetch(
+    () => fetchSpirits({ page, size: 20 }),
+    [page],
+  );
 
   return (
     <main style={{ padding: 24, color: '#ccc', fontFamily: 'sans-serif' }}>
       <h1>精灵图鉴</h1>
       <p>
-        共 {list?.meta.total ?? '—'} 只 · 稀有度 {filters?.data.rarities.length ?? '—'} 档 ·
-        职业 {filters?.data.jobs.length ?? '—'} 种
+        {loading ? '加载中…' : `共 ${list?.meta?.total ?? '—'} 只`} · 稀有度{' '}
+        {filters?.data?.rarities.length ?? '—'} 档 · 职业 {filters?.data?.jobs.length ?? '—'} 种
       </p>
       <table style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
@@ -37,7 +33,7 @@ export function SpiritsPage() {
           </tr>
         </thead>
         <tbody>
-          {list?.data.map((s) => (
+          {list?.data?.map((s) => (
             <tr key={s.race_id}>
               <td style={{ padding: 8 }}>{s.race_id}</td>
               <td style={{ padding: 8 }}>{s.spirit_name}</td>

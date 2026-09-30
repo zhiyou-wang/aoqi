@@ -16,16 +16,29 @@
       background: var(--aq-bg);
     }
 
-    /* 场景背景：上传图 + 冷色压调，保持低饱和冷色主视觉 */
+    /* 场景背景：孙尚香美宣图（响应式 srcset）+ 冷色压调层 */
     .aq-scene {
+      background: linear-gradient(135deg, var(--aq-bg-deep), var(--aq-bg) 52%, oklch(0.18 0.05 258));
+    }
+    .aq-scene__bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+    /* 冷色压调：盖在暖色图上，保持低饱和冷色主视觉 */
+    .aq-scene__tint {
+      position: absolute;
+      inset: 0;
       background:
-        radial-gradient(120% 90% at 72% 16%, oklch(0.60 0.10 230 / 0.16), transparent 46%),
-        radial-gradient(100% 80% at 18% 86%, oklch(0.45 0.12 265 / 0.18), transparent 50%),
+        radial-gradient(120% 90% at 72% 16%, oklch(0.60 0.10 230 / 0.18), transparent 46%),
+        radial-gradient(100% 80% at 18% 86%, oklch(0.45 0.12 265 / 0.22), transparent 50%),
         linear-gradient(160deg,
-          oklch(0.16 0.03 250 / 0.42) 0%,
-          oklch(0.12 0.03 252 / 0.22) 50%,
-          oklch(0.17 0.05 258 / 0.46) 100%),
-        url('assets/bg-2.jpg') center / cover no-repeat;
+          oklch(0.20 0.04 250 / 0.52) 0%,
+          oklch(0.14 0.04 252 / 0.30) 50%,
+          oklch(0.20 0.05 258 / 0.52) 100%);
     }
 
     .shell {
@@ -354,6 +367,10 @@
 </head>
 <body>
   <div class="aq-scene" aria-hidden="true">
+    <img class="aq-scene__bg" src="assets/bg-sunshangxiang.webp"
+         srcset="assets/bg-sunshangxiang-sm.webp 960w, assets/bg-sunshangxiang-md.webp 1280w, assets/bg-sunshangxiang.webp 1920w"
+         sizes="100vw" alt="" loading="lazy" decoding="async" fetchpriority="low">
+    <div class="aq-scene__tint"></div>
     <div class="aq-scene__far" style="position:absolute; right:14vw; top:8vh; width:42vw; height:46vh; border-radius:50%; background: radial-gradient(circle, oklch(0.55 0.10 230 / 0.30), transparent 65%);"></div>
     <div class="aq-scene__near" style="position:absolute; left:-6vw; bottom:-16vh; width:34vw; height:40vh; border-radius:50%; background: radial-gradient(circle, oklch(0.45 0.12 265 / 0.28), transparent 65%);"></div>
   </div>

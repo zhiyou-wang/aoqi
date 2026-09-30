@@ -1,18 +1,36 @@
-import { Link, Route, Routes } from 'react-router-dom';
+import { routePath, useHashRoute, navigate } from './lib/router';
 import { SpiritsPage } from './pages/SpiritsPage';
 import { HomePage } from './pages/HomePage';
 
 export default function App() {
+  const path = routePath(useHashRoute());
+
+  let page;
+  if (path === '/spirits') {
+    page = <SpiritsPage />;
+  } else {
+    page = <HomePage />;
+  }
+
   return (
     <div>
       <nav style={{ padding: 12, borderBottom: '1px solid #333' }}>
-        <Link to="/" style={{ marginRight: 16, color: '#ccc' }}>首页</Link>
-        <Link to="/spirits" style={{ color: '#ccc' }}>图鉴</Link>
+        <a
+          href="#/"
+          onClick={() => navigate('/')}
+          style={{ marginRight: 16, color: path === '/' ? '#fff' : '#ccc' }}
+        >
+          首页
+        </a>
+        <a
+          href="#/spirits"
+          onClick={() => navigate('/spirits')}
+          style={{ color: path === '/spirits' ? '#fff' : '#ccc' }}
+        >
+          图鉴
+        </a>
       </nav>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/spirits" element={<SpiritsPage />} />
-      </Routes>
+      {page}
     </div>
   );
 }

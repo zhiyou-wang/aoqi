@@ -23,6 +23,9 @@ _raw/
 preview*.jpg
 preview*.png
 
+# 原始大图（8K 美宣图原图，不入库，用压缩后的 webp）
+【美宣图】*
+
 # 可重新生成的中间产物
 *.sqlite
 *.db
