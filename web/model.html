@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>奥奇传说 · 冷色神迹工艺 材质系统</title>
+  <link rel="stylesheet" href="aoqi-material.css" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--aq-ink);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--aq-bg);
+    }
+
+    /* 场景背景：上传图 + 冷色压调，保持低饱和冷色主视觉 */
+    .aq-scene {
+      background:
+        radial-gradient(120% 90% at 72% 16%, oklch(0.60 0.10 230 / 0.16), transparent 46%),
+        radial-gradient(100% 80% at 18% 86%, oklch(0.45 0.12 265 / 0.18), transparent 50%),
+        linear-gradient(160deg,
+          oklch(0.16 0.03 250 / 0.42) 0%,
+          oklch(0.12 0.03 252 / 0.22) 50%,
+          oklch(0.17 0.05 258 / 0.46) 100%),
+        url('assets/bg-2.jpg') center / cover no-repeat;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr) 360px;
+      gap: 18px;
+      padding: 22px;
+      min-height: 100vh;
+    }
+
+    /* ---- 侧栏：长虹玻璃 ---- */
+    .side-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 10px;
+    }
+    .brand {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 10px;
+      border-radius: 20px;
+      background: conic-gradient(from 220deg, oklch(0.90 0.10 205), oklch(0.85 0.14 300), oklch(0.90 0.12 60), oklch(0.88 0.12 160), oklch(0.90 0.10 205));
+      color: oklch(0.14 0.03 260);
+      font-weight: 900;
+      letter-spacing: -0.08em;
+      box-shadow: 0 0 26px oklch(0.80 0.12 205 / 0.35);
+    }
+    .nav-item {
+      width: 54px;
+      min-height: 62px;
+      border: 0;
+      color: var(--aq-muted);
+      background: transparent;
+      border-radius: 20px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+      font: inherit;
+      transition: transform 150ms ease, color 150ms ease;
+    }
+    .nav-item span { font-size: 11px; }
+    .nav-item b { font-size: 18px; font-weight: 700; }
+    .nav-item.active { color: #fff; }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      left: 10px;
+      border-radius: 50%;
+      background: var(--aq-cyan);
+      box-shadow: 0 0 14px var(--aq-cyan);
+    }
+    .nav-item:hover { color: #fff; transform: translateY(-1px); }
+
+    /* ---- 主区 ---- */
+    .main {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 22px;
+    }
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--aq-muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4.5vw, 58px);
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+      text-wrap: balance;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: oklch(0.20 0.04 250 / 0.5);
+      color: oklch(0.92 0.02 220);
+      white-space: nowrap;
+    }
+    .status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--aq-mint);
+      box-shadow: 0 0 12px var(--aq-mint);
+    }
+
+    /* ---- 英雄区（大厅） ---- */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      align-items: center;
+      gap: 22px;
+      padding: clamp(22px, 3.5vw, 42px);
+      min-height: 480px;
+    }
+    .hero-copy p {
+      max-width: 54ch;
+      color: oklch(0.82 0.03 225);
+      font-size: 15px;
+      margin: 16px 0 22px;
+    }
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 24px;
+    }
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: oklch(0.88 0.03 225);
+      background: oklch(0.22 0.04 248 / 0.5);
+      border: 1px solid oklch(0.85 0.05 225 / 0.14);
+      font-size: 13px;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .ghost-btn {
+      border: 1px solid oklch(0.85 0.05 225 / 0.2);
+      border-radius: 999px;
+      padding: 15px 20px;
+      background: oklch(0.20 0.04 250 / 0.35);
+      color: var(--aq-ink);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .hero-ornament {
+      position: relative;
+      display: grid;
+      place-items: center;
+      align-self: stretch;
+    }
+    .crystal-orb {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      animation: aq-orb-float 6s ease-in-out infinite;
+    }
+    .crystal-ref {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      overflow: hidden;
+      background:
+        repeating-radial-gradient(circle at 50% 50%,
+          oklch(0.80 0.14 205 / 0.55) 0 2px,
+          transparent 2px 13px),
+        repeating-conic-gradient(from 0deg,
+          oklch(0.72 0.13 250 / 0.40) 0deg 9deg,
+          transparent 9deg 26deg);
+      opacity: 0.85;
+    }
+    .crystal-glass {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+    @keyframes aq-orb-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .crystal-label {
+      position: absolute;
+      bottom: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    /* ---- 材质展示区 ---- */
+    .showcase {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .demo {
+      min-height: 128px;
+      padding: 14px;
+      border-radius: var(--aq-r-md);
+      border: 1px solid oklch(0.85 0.05 225 / 0.10);
+      background: oklch(0.20 0.04 248 / 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .demo h4 {
+      margin: 0;
+      font-size: 13px;
+      color: var(--aq-muted);
+      font-weight: 600;
+    }
+    .demo-num {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 11px;
+      color: oklch(0.55 0.03 230);
+      letter-spacing: 0.08em;
+    }
+
+    /* 右侧控制面板 */
+    .right-panel {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      gap: 16px;
+      align-content: start;
+    }
+    .panel {
+      padding: 18px;
+    }
+    .panel h3 {
+      margin: 0 0 14px;
+      letter-spacing: -0.03em;
+    }
+    .controls { display: grid; gap: 10px; }
+    .control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 48px;
+      padding: 8px 10px 8px 14px;
+      border-radius: 999px;
+    }
+    .seg {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 999px;
+      background: oklch(0.14 0.03 250 / 0.6);
+    }
+    .seg button {
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--aq-muted);
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+    }
+    .seg button.active {
+      color: #fff;
+      background: oklch(0.70 0.10 210 / 0.22);
+      box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18);
+    }
+    .switch {
+      width: 48px;
+      height: 28px;
+      border-radius: 999px;
+      padding: 3px;
+      background: linear-gradient(90deg, oklch(0.80 0.12 160 / 0.55), oklch(0.70 0.12 250 / 0.6));
+    }
+    .switch::before {
+      content: "";
+      display: block;
+      width: 22px;
+      height: 22px;
+      margin-left: 20px;
+      border-radius: 50%;
+      background: oklch(0.98 0.01 220);
+      box-shadow: 0 2px 8px oklch(0 0 0 / 0.35);
+    }
+    .stats { display: grid; gap: 12px; }
+    .stat-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 32px;
+      align-items: center;
+      gap: 10px;
+      color: oklch(0.80 0.03 225);
+      font-size: 13px;
+    }
+
+    /* 玻璃参数控制面板 */
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .preset {
+      border: 1px solid oklch(0.85 0.05 225 / 0.14);
+      border-radius: 999px;
+      padding: 9px 10px;
+      background: oklch(0.20 0.04 248 / 0.4);
+      color: var(--aq-muted);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12.5px;
+      transition: color 150ms ease, background 150ms ease, border-color 150ms ease;
+    }
+    .preset:hover { color: #fff; }
+    .preset.active {
+      color: #fff;
+      border-color: oklch(0.80 0.11 205 / 0.6);
+      background: oklch(0.70 0.10 210 / 0.18);
+      box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18);
+    }
+    .param-list { display: grid; gap: 12px; }
+    .param label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 5px;
+      font-size: 12px;
+      color: oklch(0.72 0.03 225);
+    }
+    .param label output {
+      font-variant-numeric: tabular-nums;
+      color: var(--aq-cyan);
+      font-weight: 600;
+    }
+    .param input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 999px;
+      background: oklch(1 0 0 / 0.12);
+      outline: none;
+    }
+    .param input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: oklch(0.95 0.02 220);
+      border: 2px solid oklch(0.70 0.12 210);
+      cursor: pointer;
+      box-shadow: 0 1px 5px oklch(0 0 0 / 0.4);
+    }
+    .param-group-title {
+      margin: 4px 0 2px;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: oklch(0.55 0.03 230);
+      text-transform: uppercase;
+    }
+
+    /* 精灵卡片（英雄区） */
+    .spirit-card {
+      padding: 14px;
+      border-radius: var(--aq-r-md);
+      border: 1px solid oklch(0.85 0.05 225 / 0.16);
+      cursor: pointer;
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+    .spirit-card.active {
+      transform: translateX(-10px);
+      border-color: oklch(0.80 0.11 205 / 0.6);
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .orb {
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 30% 25%, oklch(1 0 0), var(--aq-mint) 18%, var(--aq-blue) 50%, transparent 72%);
+      box-shadow: 0 0 18px oklch(0.80 0.12 205 / 0.3);
+    }
+    .spirit-name { font-weight: 800; font-size: 16px; }
+    .spirit-meta { color: var(--aq-muted); font-size: 12px; margin-top: 2px; }
+
+    .hero-stack {
+      display: grid;
+      gap: 11px;
+      align-self: center;
+    }
+
+    /* 透镜折射演示 */
+    .lens-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      border-radius: var(--aq-r-md);
+      background:
+        repeating-linear-gradient(45deg, oklch(0.80 0.16 205 / 0.45) 0 9px, oklch(0.90 0.17 350 / 0.45) 9px 18px),
+        oklch(0.22 0.05 248);
+    }
+    .lens-plate {
+      position: absolute;
+      inset: 14px;
+      z-index: 1;
+      border-radius: 14px;
+      background: oklch(0.85 0.05 230 / 0.08);
+      box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.4), inset 0 -1px 0 oklch(0.10 0.03 250 / 0.5);
+    }
+
+    /* 长虹玻璃折射演示 */
+    .fluted-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      border-radius: var(--aq-r-md);
+      background: repeating-linear-gradient(90deg,
+        oklch(0.75 0.14 205 / 0.55) 0 8px,
+        oklch(0.85 0.16 350 / 0.5) 8px 16px);
+    }
+    .fluted-plate {
+      position: absolute;
+      inset: 14px;
+      z-index: 1;
+      border-radius: 10px;
+      background: oklch(0.85 0.05 230 / 0.08);
+      box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.4), inset 0 -1px 0 oklch(0.10 0.03 250 / 0.5);
+    }
+
+    :focus-visible {
+      outline: 2px solid oklch(0.85 0.14 205);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 1180px) {
+      .shell { grid-template-columns: 76px minmax(0, 1fr); }
+      .right-panel { grid-column: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { grid-template-columns: 1fr; }
+      .showcase { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .shell { grid-template-columns: 1fr; padding: 14px; }
+      .side-nav { flex-direction: row; justify-content: space-between; }
+      .brand { margin: 0; }
+      .main, .right-panel { grid-column: auto; }
+      .showcase { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .right-panel { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="aq-scene" aria-hidden="true">
+    <div class="aq-scene__far" style="position:absolute; right:14vw; top:8vh; width:42vw; height:46vh; border-radius:50%; background: radial-gradient(circle, oklch(0.55 0.10 230 / 0.30), transparent 65%);"></div>
+    <div class="aq-scene__near" style="position:absolute; left:-6vw; bottom:-16vh; width:34vw; height:40vh; border-radius:50%; background: radial-gradient(circle, oklch(0.45 0.12 265 / 0.28), transparent 65%);"></div>
+  </div>
+  <div class="aq-chromatic-edge" aria-hidden="true"></div>
+
+  <div class="shell">
+    <nav class="side-nav aq-fluted" data-superellipse="44" aria-label="主导航">
+      <div class="brand">AQ</div>
+      <button class="nav-item active" type="button"><b>✦</b><span>图鉴</span></button>
+      <button class="nav-item" type="button"><b>◇</b><span>养成</span></button>
+      <button class="nav-item" type="button"><b>✧</b><span>羁绊</span></button>
+      <button class="nav-item" type="button"><b>☼</b><span>设置</span></button>
+    </nav>
+
+    <main class="main">
+      <header class="topbar aq-glass" data-superellipse="44">
+        <div>
+          <p class="eyebrow">冷色神迹工艺 · 材质系统</p>
+          <h1>十个词，一套画面</h1>
+        </div>
+        <div class="status">静止冷色 · 冲击高饱和</div>
+      </header>
+
+      <section class="hero aq-glass" data-superellipse="44">
+        <div class="hero-copy">
+          <p class="eyebrow">Spirit atlas · Lobby</p>
+          <h1>以源核为中心，浏览精灵、皮肤与羁绊。</h1>
+          <p>场景层低饱和冷色与景深，玻璃层承载信息，唯一的液态金属主按钮浮在最前。右侧是神迹晶体，左上角一枚 Y2K 传说徽章。点击主按钮会触发高饱和冲击帧。</p>
+          <div class="hero-tags">
+            <span class="tag">低饱和冷色</span>
+            <span class="tag">液态玻璃</span>
+            <span class="tag">液态金属</span>
+            <span class="tag">Y2K 铬</span>
+            <span class="tag">高饱和冲击帧</span>
+          </div>
+          <div class="hero-actions">
+            <button class="aq-metal" type="button" id="cta">
+              <span class="aq-metal__liquid" data-liquid-metal="16" aria-hidden="true"></span>
+              <span class="aq-metal__sheen" aria-hidden="true"></span>
+              <span class="aq-metal__label">进入图鉴</span>
+            </button>
+            <button class="ghost-btn" type="button" id="reset-demo">重置演示</button>
+          </div>
+        </div>
+
+        <div class="hero-ornament">
+          <div class="crystal-orb">
+            <div class="crystal-ref" aria-hidden="true"></div>
+            <div class="crystal-glass aq-crystal" data-crystal="0.6"></div>
+          </div>
+          <div class="crystal-label">
+            <span class="aq-y2k" style="display:inline-block;padding:6px 14px;">
+              <i class="aq-y2k__glint"></i><i class="aq-y2k__glint"></i><i class="aq-y2k__glint"></i>
+              <span class="aq-y2k__label">传说</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="showcase" aria-label="材质展示">
+        <article class="demo" data-superellipse="32" style="background:transparent;">
+          <h4>液态玻璃 · 折射透镜</h4>
+          <span class="demo-num">01</span>
+          <div class="lens-bg" aria-hidden="true"></div>
+          <div class="lens-plate" data-lens="1.6"></div>
+          <span style="position:relative;z-index:2;font-size:12px;color:var(--aq-muted);">feDisplacementMap 真折射</span>
+        </article>
+
+        <article class="demo" data-superellipse="32" style="background:transparent;">
+          <h4>长虹玻璃 · 竖棱折射</h4>
+          <span class="demo-num">02</span>
+          <div class="fluted-bg" aria-hidden="true"></div>
+          <div class="fluted-plate aq-fluted" data-fluted="1"></div>
+          <span style="position:relative;z-index:2;font-size:12px;color:var(--aq-muted);">锯齿位移 · 棱镜折射</span>
+        </article>
+
+        <article class="demo" data-superellipse="32">
+          <h4>液态金属</h4>
+          <span class="demo-num">03</span>
+          <button class="aq-metal" type="button" style="width:100%;padding:13px 16px;font-size:15px;">
+            <span class="aq-metal__liquid" data-liquid-metal="14" aria-hidden="true"></span>
+            <span class="aq-metal__sheen" aria-hidden="true"></span>
+            <span class="aq-metal__label">主按钮</span>
+          </button>
+        </article>
+
+        <article class="demo" data-superellipse="32">
+          <h4>Y2K 铬</h4>
+          <span class="demo-num">04</span>
+          <div style="flex:1;display:grid;place-items:center;">
+            <span class="aq-y2k" style="display:inline-block;padding:8px 16px;">
+              <i class="aq-y2k__glint"></i><i class="aq-y2k__glint"></i><i class="aq-y2k__glint"></i>
+              <span class="aq-y2k__label">NEW</span>
+            </span>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <aside class="right-panel">
+      <section class="panel aq-glass" data-superellipse="44">
+        <h3>玻璃参数</h3>
+        <div class="presets" role="group" aria-label="预设">
+          <button class="preset active" type="button" data-preset="cold">冷色神迹</button>
+          <button class="preset" type="button" data-preset="deep">深空琉璃</button>
+          <button class="preset" type="button" data-preset="mist">晨雾冰晶</button>
+          <button class="preset" type="button" data-preset="chrome">高对比铬晶</button>
+        </div>
+        <div class="param-list">
+          <p class="param-group-title">折射</p>
+          <div class="param">
+            <label>折射强度 <output data-param-out="displacement"></output></label>
+            <input type="range" data-param="displacement" min="0.5" max="3" step="0.05">
+          </div>
+          <div class="param">
+            <label>折射厚度 <output data-param-out="thickness"></output></label>
+            <input type="range" data-param="thickness" min="0.6" max="0.98" step="0.01">
+          </div>
+          <div class="param">
+            <label>色散 <output data-param-out="dispersion"></output></label>
+            <input type="range" data-param="dispersion" min="0" max="30" step="1">
+          </div>
+          <div class="param">
+            <label>边缘鼓起 <output data-param-out="bulge"></output></label>
+            <input type="range" data-param="bulge" min="0" max="20" step="1">
+          </div>
+          <p class="param-group-title">光照</p>
+          <div class="param">
+            <label>菲涅尔 <output data-param-out="fresnel"></output></label>
+            <input type="range" data-param="fresnel" min="0.1" max="1" step="0.01">
+          </div>
+          <div class="param">
+            <label>眩光 <output data-param-out="glare"></output></label>
+            <input type="range" data-param="glare" min="0.1" max="1" step="0.01">
+          </div>
+          <div class="param">
+            <label>背景模糊 <output data-param-out="blur"></output></label>
+            <input type="range" data-param="blur" min="10" max="60" step="1">
+          </div>
+          <div class="param">
+            <label>阴影 <output data-param-out="shadow"></output></label>
+            <input type="range" data-param="shadow" min="0" max="0.6" step="0.02">
+          </div>
+        </div>
+      </section>
+
+      <section class="panel aq-glass" data-superellipse="44">
+        <h3>硬表面 · 属性面板</h3>
+        <div class="stats">
+          <div class="stat-row"><span>生命</span><div class="aq-gauge"><i style="width:72%"></i></div><b>72</b></div>
+          <div class="stat-row"><span>攻击</span><div class="aq-gauge"><i style="width:88%"></i></div><b>88</b></div>
+          <div class="stat-row"><span>防御</span><div class="aq-gauge"><i style="width:61%"></i></div><b>61</b></div>
+          <div class="stat-row"><span>速度</span><div class="aq-gauge"><i style="width:76%"></i></div><b>76</b></div>
+        </div>
+      </section>
+
+      <section class="panel aq-frosted" data-superellipse="44">
+        <h3 style="filter:none;opacity:1;">未探明 · 磨砂玻璃</h3>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div class="orb" style="width:36px;height:36px;"></div>
+          <span>源起 · 修尔 · 形态待解锁</span>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <script src="aoqi-material.js"></script>
+  <script>
+    AoqiMaterial.init();
+
+    // 主按钮冲击帧
+    const cta = document.getElementById('cta');
+    cta.addEventListener('click', () => {
+      AoqiMaterial.impact(cta, { split: true, flash: true });
+    });
+
+    // 重置：清除磨砂（演示未探明解锁）
+    const reset = document.getElementById('reset-demo');
+    const frostedPanel = document.querySelector('.aq-frosted');
+    let unlocked = false;
+    reset.addEventListener('click', () => {
+      if (!unlocked) {
+        AoqiMaterial.frost(frostedPanel, false);
+        AoqiMaterial.impact(frostedPanel, { split: false, flash: true });
+        unlocked = true;
+        reset.textContent = '重新磨砂';
+      } else {
+        AoqiMaterial.frost(frostedPanel, true);
+        unlocked = false;
+        reset.textContent = '重置演示';
+      }
+    });
+
+    /* ============ 玻璃参数控制面板 ============ */
+    // 预览对象：折射参数作用于折射透镜 demo，光照参数作用于所有玻璃面板
+    const lensPlate = document.querySelector('.lens-plate');
+    const glassPanels = () => document.querySelectorAll('.aq-glass');
+
+    // 参数定义：默认值（对应「冷色神迹」预设）
+    const PARAMS = {
+      displacement: { def: 1.6, fmt: (v) => v.toFixed(2) + '×' },
+      thickness: { def: 0.85, fmt: (v) => v.toFixed(2) },
+      dispersion: { def: 0, fmt: (v) => v.toFixed(0) + 'px' },
+      bulge: { def: 0, fmt: (v) => v.toFixed(0) + 'px' },
+      fresnel: { def: 0.55, fmt: (v) => v.toFixed(2) },
+      glare: { def: 0.42, fmt: (v) => v.toFixed(2) },
+      blur: { def: 30, fmt: (v) => v.toFixed(0) + 'px' },
+      shadow: { def: 0.34, fmt: (v) => v.toFixed(2) },
+    };
+
+    // 四个预设（好看的设置）
+    const PRESETS = {
+      cold: {
+        label: '冷色神迹',
+        displacement: 1.6, thickness: 0.85, dispersion: 0, bulge: 0,
+        fresnel: 0.55, glare: 0.42, blur: 30, shadow: 0.34,
+      },
+      deep: {
+        label: '深空琉璃',
+        displacement: 2.4, thickness: 0.9, dispersion: 12, bulge: 6,
+        fresnel: 0.72, glare: 0.5, blur: 36, shadow: 0.42,
+      },
+      mist: {
+        label: '晨雾冰晶',
+        displacement: 1.2, thickness: 0.75, dispersion: 3, bulge: 0,
+        fresnel: 0.32, glare: 0.62, blur: 48, shadow: 0.2,
+      },
+      chrome: {
+        label: '高对比铬晶',
+        displacement: 1.8, thickness: 0.92, dispersion: 18, bulge: 10,
+        fresnel: 0.92, glare: 0.8, blur: 22, shadow: 0.5,
+      },
+    };
+
+    let current = Object.assign({}, PRESETS.cold);
+
+    function applyLensParams() {
+      if (!lensPlate || !lensPlate.__aqLens) return;
+      lensPlate.__aqLens.update({
+        displacement: current.displacement,
+        thickness: current.thickness,
+        dispersion: current.dispersion,
+        bulge: current.bulge,
+      });
+    }
+
+    function applyLightParams() {
+      glassPanels().forEach((el) => {
+        el.style.setProperty('--aq-fresnel', String(current.fresnel));
+        el.style.setProperty('--aq-glare', String(current.glare));
+        el.style.setProperty('--aq-blur', current.blur + 'px');
+        el.style.setProperty('--aq-shadow', String(current.shadow));
+      });
+    }
+
+    function applyParams() {
+      applyLensParams();
+      applyLightParams();
+      // 同步滑块和输出
+      Object.keys(PARAMS).forEach((key) => {
+        const input = document.querySelector(`[data-param="${key}"]`);
+        const output = document.querySelector(`[data-param-out="${key}"]`);
+        if (input) input.value = current[key];
+        if (output) output.textContent = PARAMS[key].fmt(current[key]);
+      });
+    }
+
+    // 滑块输入
+    Object.keys(PARAMS).forEach((key) => {
+      const input = document.querySelector(`[data-param="${key}"]`);
+      const output = document.querySelector(`[data-param-out="${key}"]`);
+      if (!input) return;
+      input.addEventListener('input', () => {
+        current[key] = parseFloat(input.value);
+        if (output) output.textContent = PARAMS[key].fmt(current[key]);
+        if (['displacement', 'thickness', 'dispersion', 'bulge'].includes(key)) {
+          applyLensParams();
+        } else {
+          applyLightParams();
+        }
+        // 清除预设高亮（手动微调）
+        document.querySelectorAll('.preset').forEach((p) => p.classList.remove('active'));
+      });
+    });
+
+    // 预设切换
+    document.querySelectorAll('.preset').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const preset = PRESETS[btn.dataset.preset];
+        if (!preset) return;
+        current = Object.assign({}, preset);
+        document.querySelectorAll('.preset').forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        applyParams();
+        AoqiMaterial.impact(document.querySelector('.lens-plate'), { split: false, flash: false });
+      });
+    });
+
+    // 初始应用
+    applyParams();
+  </script>
+</body>
+</html>

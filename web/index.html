@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>奥奇传说精灵表</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f1ea;
+      --paper: #fffdf8;
+      --ink: #241c16;
+      --muted: #6d6258;
+      --line: #e4d9cc;
+      --accent: #9a4d2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 14px/1.5 "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header, main { width: min(1280px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 28px 0 8px; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    .sub { color: var(--muted); }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    input, select, button {
+      font: inherit;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    input[type="search"] { min-width: 240px; }
+    button { cursor: pointer; }
+    .count { align-self: center; color: var(--muted); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; padding-bottom: 40px; }
+    table { width: 100%; border-collapse: collapse; background: var(--paper); }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { position: sticky; top: 0; background: #f7f0e6; cursor: pointer; }
+    tr.active { background: #f3e4d4; }
+    tbody tr { cursor: pointer; }
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      position: sticky;
+      top: 12px;
+      max-height: calc(100vh - 24px);
+      overflow: auto;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 20px; }
+    .meta { color: var(--muted); margin-bottom: 10px; }
+    .panel p { margin: 8px 0; white-space: pre-wrap; }
+    .panel ul { margin: 0 0 8px; padding-left: 18px; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>奥奇传说精灵表</h1>
+    <div class="sub">数据来自本机安装包的配置表。稀有度 4 已对照游戏内「传说」角标，1 到 3 依次记为初代、幻兽、超能。</div>
+    <div class="filters">
+      <input id="q" type="search" placeholder="搜索名字、职业、定位" />
+      <select id="rarity"><option value="">全部稀有度</option></select>
+      <select id="element"><option value="">全部属性</option></select>
+      <select id="job"><option value="">全部职业</option></select>
+      <select id="era"><option value="">全部时代</option></select>
+      <select id="position"><option value="">全部站位</option></select>
+      <select id="dex">
+        <option value="">图鉴收录不限</option>
+        <option value="是">只看图鉴册</option>
+        <option value="否">册外精灵</option>
+      </select>
+      <button id="reset" type="button">清空筛选</button>
+      <span class="count" id="count"></span>
+    </div>
+  </header>
+  <main class="layout">
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th data-key="name">名字</th>
+            <th data-key="rarity">稀有度</th>
+            <th data-key="element">属性</th>
+            <th data-key="jobs">职业</th>
+            <th data-key="era">时代</th>
+            <th data-key="position">站位</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <aside class="panel" id="detail"><h2>点一只精灵</h2><p class="meta">右侧会显示档案和技能槽。</p></aside>
+  </main>
+  <script src="spirits.js"></script>
+  <script>
+    const spirits = window.SPIRITS || [];
+    const state = { q: "", rarity: "", element: "", job: "", era: "", position: "", dex: "", sort: "name", dir: 1, selected: null };
+
+    function unique(key) {
+      return [...new Set(spirits.map((row) => row[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), "zh"));
+    }
+    function fill(id, values) {
+      const select = document.getElementById(id);
+      values.forEach((value) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+    }
+    fill("rarity", unique("rarity"));
+    fill("element", [...new Set(spirits.flatMap((row) => row.elements || []))].sort((a, b) => a.localeCompare(b, "zh")));
+    fill("era", ["源起", "神曜", "神启", "其他"]);
+    fill("position", unique("position"));
+    fill("job", [...new Set(spirits.flatMap((row) => row.jobs))].sort((a, b) => a.localeCompare(b, "zh")));
+
+    function matched(row) {
+      if (state.rarity && row.rarity !== state.rarity) return false;
+      if (state.element && !(row.elements || []).includes(state.element)) return false;
+      if (state.job && !row.jobs.includes(state.job)) return false;
+      if (state.era === "其他" && row.era !== "其他") return false;
+      if (state.era && state.era !== "其他" && !row.era.split("、").includes(state.era)) return false;
+      if (state.position && row.position !== state.position) return false;
+      if (state.dex && row.inDex !== state.dex) return false;
+      if (!state.q) return true;
+      const haystack = [row.name, row.jobs.join("、"), row.label, row.resume, row.strategy, row.introduce, (row.skins || []).map((skin) => skin.name).join("、")].join("\n");
+      return haystack.toLowerCase().includes(state.q.toLowerCase());
+    }
+
+    function render() {
+      const list = spirits.filter(matched).sort((a, b) => {
+        const left = String(a[state.sort] || "");
+        const right = String(b[state.sort] || "");
+        return left.localeCompare(right, "zh") * state.dir;
+      });
+      document.getElementById("count").textContent = list.length + " / " + spirits.length;
+      const body = document.getElementById("rows");
+      body.replaceChildren();
+      list.forEach((row) => {
+        const tr = document.createElement("tr");
+        if (state.selected && state.selected.id === row.id) tr.className = "active";
+        [row.name, row.rarity, row.element, row.jobs.join("、"), row.era, row.position].forEach((value) => {
+          const td = document.createElement("td");
+          td.textContent = value || "";
+          tr.appendChild(td);
+        });
+        tr.addEventListener("click", () => {
+          state.selected = row;
+          renderDetail(row);
+          render();
+        });
+        body.appendChild(tr);
+      });
+    }
+
+    function line(label, value) {
+      if (!value) return "";
+      return "<p><b>" + label + "</b> " + escapeHtml(value) + "</p>";
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[ch]));
+    }
+    function skillBlock(row) {
+      const skills = row.skillList || [];
+      if (!skills.length) return line("技能", row.skills);
+      return skills.map((skill) => {
+        const levels = skill.levels || [];
+        const first = levels[0];
+        const head = [skill.slot, skill.name, skill.type, skill.power].filter(Boolean).join(" ");
+        const levelNote = levels.length > 1 ? " 共" + levels.length + "级" : (first ? " Lv." + first.lv : "");
+        return "<p><b>" + escapeHtml(head + levelNote) + "</b></p>" +
+          (first && first.desc ? "<p>" + escapeHtml(first.desc) + "</p>" : "");
+      }).join("");
+    }
+    function formBlock(row) {
+      const forms = row.forms || [];
+      if (forms.length < 2 && !row.evolveFrom && !row.evolveTo) return "";
+      const items = forms.filter((form) => form.id !== row.id).map((form) => {
+        return "<li><b>" + escapeHtml(form.name) + "</b> " + escapeHtml(form.era || "") + "</li>";
+      }).join("");
+      return line("进化自", row.evolveFrom) + line("进化为", row.evolveTo) +
+        (items ? "<p><b>其他形态</b></p><ul>" + items + "</ul>" : "");
+    }
+    function skinBlock(row) {
+      const skins = row.skins || [];
+      if (!skins.length) return "";
+      const items = skins.map((skin) => {
+        const bits = [skin.base ? "本体" : (skin.grade || "皮肤"), skin.element, (skin.jobs || []).join("、"), skin.hidden ? "隐藏" : ""].filter(Boolean);
+        return "<li><b>" + escapeHtml(skin.name) + "</b> " + escapeHtml(bits.join(" · ")) + "</li>";
+      }).join("");
+      return "<p><b>皮肤 " + skins.length + "</b></p><ul>" + items + "</ul>";
+    }
+    function renderDetail(row) {
+      const scores = ["生命", "攻击", "物防", "魔防", "速度"]
+        .map((label, index) => row.scores[index] === "" ? "" : label + row.scores[index])
+        .filter(Boolean)
+        .join("  ");
+      document.getElementById("detail").innerHTML =
+        "<h2>" + escapeHtml(row.name) + "</h2>" +
+        '<div class="meta">' + escapeHtml([row.rarity, row.element, row.position, "ID " + row.id].filter(Boolean).join(" · ")) + "</div>" +
+        line("职业", row.jobs.join("、")) +
+        formBlock(row) +
+        skinBlock(row) +
+        line("时代", row.era) +
+        line("标签", row.label) +
+        line("定位", row.resume) +
+        line("攻略短句", row.strategy) +
+        line("评分", scores) +
+        line("档案", [row.gender, row.birthday, row.height, row.weight, row.birthplace, row.hobby, row.character].filter(Boolean).join(" · ")) +
+        line("自述", row.selfDesc) +
+        skillBlock(row) +
+        line("图鉴册", row.inDex === "是" ? "已收录 #" + row.bookId : "不在图鉴册") +
+        line("介绍", row.introduce);
+    }
+
+    document.getElementById("q").addEventListener("input", (event) => { state.q = event.target.value.trim(); render(); });
+    ["rarity", "element", "job", "era", "position", "dex"].forEach((id) => {
+      document.getElementById(id).addEventListener("change", (event) => { state[id] = event.target.value; render(); });
+    });
+    document.getElementById("reset").addEventListener("click", () => {
+      state.q = state.rarity = state.element = state.job = state.era = state.position = state.dex = "";
+      document.querySelectorAll(".filters input, .filters select").forEach((node) => { node.value = ""; });
+      render();
+    });
+    document.querySelectorAll("th").forEach((th) => {
+      th.addEventListener("click", () => {
+        const key = th.dataset.key;
+        state.dir = state.sort === key ? -state.dir : 1;
+        state.sort = key;
+        render();
+      });
+    });
+    render();
+  </script>
+</body>
+</html>

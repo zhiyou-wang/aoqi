@@ -1,0 +1,46 @@
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+*.egg-info/
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
+
+# 原始数据与抓包（体积大，不入库）
+_raw/
+preview*.jpg
+preview*.png
+
+# 可重新生成的中间产物
+*.sqlite
+*.db
+
+# 参考项目（液态玻璃示例，非本项目源码）
+liquid-glass-main/
+liquid-glass-react-main/
+liquid-glass-studio-main/
+liquid-glass-main.zip
+liquid-glass-react-main.zip
+liquid-glass-studio-main.zip
+AndroidLiquidGlass-kmp/
+AndroidLiquidGlass-kmp.zip
+
+# 临时与本地
+*.log
+.DS_Store
+Thumbs.db
+
+# Oracle 凭证
+apps/api/.env
