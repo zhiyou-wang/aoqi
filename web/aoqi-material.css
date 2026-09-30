@@ -33,9 +33,9 @@
   --aq-burst-pink: oklch(0.70 0.26 350);
 
   /* ---- 连续圆角半径（配合 JS 超椭圆） ---- */
-  --aq-r-lg: 44px;
-  --aq-r-md: 32px;
-  --aq-r-sm: 24px;
+  --aq-r-lg: 88px;
+  --aq-r-md: 64px;
+  --aq-r-sm: 48px;
 
   /* ---- 动效 ---- */
   --aq-ease-jelly: cubic-bezier(0.22, 0.61, 0.36, 1);
