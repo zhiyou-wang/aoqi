@@ -6,8 +6,13 @@
  */
 import type {
   ApiResponse,
+  BondOverview,
   FilterDict,
   MaterialConfig,
+  RelationOverview,
+  SkinDetail,
+  SkinGrade,
+  SkinSummary,
   SpiritDetail,
   SpiritListQuery,
   SpiritSummary,
@@ -49,4 +54,29 @@ export function fetchSpiritDetail(raceId: number) {
 /** 材质配置 */
 export function fetchMaterialConfig() {
   return request<MaterialConfig>('/material-config');
+}
+
+/** 皮肤列表 */
+export function fetchSkins(params?: { grade?: string; q?: string; page?: number; size?: number }) {
+  return request<SkinSummary[]>('/skins', params as Record<string, unknown>);
+}
+
+/** 皮肤品级 */
+export function fetchSkinGrades() {
+  return request<SkinGrade[]>('/skins/grades');
+}
+
+/** 皮肤详情 */
+export function fetchSkinDetail(skinId: number) {
+  return request<SkinDetail>(`/skins/${skinId}`);
+}
+
+/** 羁绊总览 */
+export function fetchBonds() {
+  return request<BondOverview>('/bonds');
+}
+
+/** 关系图总览 */
+export function fetchRelations() {
+  return request<RelationOverview>('/relations');
 }

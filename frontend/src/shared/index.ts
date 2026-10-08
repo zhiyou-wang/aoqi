@@ -163,3 +163,87 @@ export interface MaterialConfig {
   rarities: RarityMaterial[];
   skin_grades: SkinGradeMaterial[];
 }
+
+// ---- 皮肤域 ----
+
+/** 皮肤品级 */
+export interface SkinGrade {
+  grade_code: string;
+  grade_name: string;
+  sort_no: number;
+}
+
+/** 皮肤列表项 */
+export interface SkinSummary {
+  skin_id: number;
+  skin_name: string;
+  grade_code: string | null;
+  grade_name: string | null;
+  wear_count: number;
+}
+
+/** 皮肤详情 */
+export interface SkinDetail {
+  skin_id: number;
+  skin_name: string;
+  grade_code: string | null;
+  grade_name: string | null;
+  wearers: Array<Record<string, unknown>>;
+}
+
+// ---- 羁绊域 ----
+
+/** 上阵羁绊 */
+export interface BondForm {
+  race_id: number;
+  spirit_name: string | null;
+  bond_name: string | null;
+  effect_desc: string | null;
+  awaken_level: number | null;
+  power_factor: number | null;
+  members: Array<Record<string, unknown>>;
+}
+
+/** 收集羁绊 */
+export interface BondCollect {
+  bond_id: number;
+  spirit_name: string | null;
+  partner_name: string | null;
+  bond_name: string | null;
+  stat_text: string | null;
+  bonus_percent: number | null;
+  effect_desc: string | null;
+}
+
+/** 羁绊总览 */
+export interface BondOverview {
+  forms: BondForm[];
+  collects: BondCollect[];
+}
+
+// ---- 关系图域 ----
+
+/** 关系组 */
+export interface RelationGroup {
+  group_id: number;
+  group_name: string;
+  tag_name: string | null;
+  members: Array<Record<string, unknown>>;
+}
+
+/** 关系连线 */
+export interface RelationLine {
+  line_id: number;
+  from_race_id: number;
+  from_name: string | null;
+  to_race_id: number;
+  to_name: string | null;
+  label_out: string | null;
+  label_back: string | null;
+}
+
+/** 关系图总览 */
+export interface RelationOverview {
+  groups: RelationGroup[];
+  lines: RelationLine[];
+}
