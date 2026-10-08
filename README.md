@@ -12,9 +12,13 @@ aoqi/
 ├── packages/
 │   ├── ui/           # 自研组件库（材质系统迁移目标）
 │   └── shared/       # 前后端共享类型/契约
-├── etl/              # 数据管道（游戏配置 → CSV → Oracle）
+├── pipeline/         # 数据管道（游戏配置 → CSV → Oracle）
+│   ├── db/           #   Oracle schema + 加载脚本
+│   └── tools/        #   ETL 工具（build_dex / ljread）
 ├── docs/             # 文档（数据模型 / 材质系统 / 技术方案）
-└── web/              # 早期纯静态原型（已冻结，后续并入 apps/web）
+├── prototype/        # 早期纯静态原型（已冻结，后续并入 apps/web）
+├── data/             # CSV 数据（spirits/skills/skills/evolutions）
+└── _raw/             # 原始抓包与临时数据（不入 git）
 ```
 
 ## 快速开始

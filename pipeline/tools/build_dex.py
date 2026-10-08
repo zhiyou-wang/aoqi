@@ -7,10 +7,10 @@ from pathlib import Path
 
 from ljread import rows_by_schema
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 LUA = ROOT / "_raw" / "lua"
 DATA = ROOT / "data"
-WEB = ROOT / "web"
+WEB = ROOT / "prototype"
 
 RARITY = {1: "初代", 2: "幻兽", 3: "超能", 4: "传说"}
 ERA_TOKENS = ("源起", "神曜", "神启")

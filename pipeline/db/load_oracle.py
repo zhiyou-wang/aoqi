@@ -7,10 +7,10 @@ from pathlib import Path
 
 import oracledb
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 LUA = ROOT / "_raw" / "lua"
-sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(ROOT / "pipeline" / "tools"))
 from ljread import load_bytecode
 
 JOBS = {

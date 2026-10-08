@@ -92,4 +92,4 @@ description: 奥奇传说界面规范。沿用王者万象棋的场景式界面�
 
 ## 落地组件
 
-网页端复用 `web/aoqi-material.css`（token + 材质类）和 `web/aoqi-material.js`（超椭圆 `superellipse`、透镜 `lens`、冲击 `impact`、磨砂 `frost`）。材质类：`aq-glass` / `aq-fluted` / `aq-crystal` / `aq-matte` / `aq-hard` / `aq-metal` / `aq-y2k` / `aq-frosted` / `aq-impact`。完整参数与映射见 `docs/04-材质系统.md`。
+网页端复用 `prototype/aoqi-material.css`（token + 材质类）和 `prototype/aoqi-material.js`（超椭圆 `superellipse`、透镜 `lens`、冲击 `impact`、磨砂 `frost`）。材质类：`aq-glass` / `aq-fluted` / `aq-crystal` / `aq-matte` / `aq-hard` / `aq-metal` / `aq-y2k` / `aq-frosted` / `aq-impact`。完整参数与映射见 `docs/04-材质系统.md`。
