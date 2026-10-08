@@ -12,6 +12,9 @@ __pycache__/
 venv/
 .env
 *.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
 
 # 编辑器
 .idea/

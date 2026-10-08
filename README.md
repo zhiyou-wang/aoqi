@@ -60,6 +60,20 @@ npm run dev                    # 启动开发服务器
 
 > 前端依赖在 `frontend/node_modules`，后端依赖在 `backend/.venv`，前后端完全独立。
 
+## 测试
+
+```bash
+# 后端（纯逻辑测试，不依赖数据库）
+cd backend
+.venv\Scripts\python.exe -m pytest
+
+# 前端（材质阶梯 / 路由纯函数）
+cd frontend
+npm test
+```
+
+CI（GitHub Actions）在 push/PR 时自动跑：后端 pytest、前端 tsc 类型检查 + vitest + build。
+
 ## 自由度 / 可升级性 / 可调整性设计
 
 骨架遵循四个原则，需求未定时也能低成本演进：
