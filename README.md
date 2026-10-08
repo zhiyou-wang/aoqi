@@ -27,7 +27,7 @@ aoqi/
 │   ├── requirements.txt
 │   └── .env.example
 ├── docs/                      # 文档（数据模型 / 材质系统 / 技术方案）
-├── prototype/                 # 早期纯静态设计原型（已冻结）
+│   └── archive/               #   归档（真折射引擎参考实现）
 └── _raw/                      # 原始抓包与临时数据（不入 git）
 ```
 
