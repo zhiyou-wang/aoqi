@@ -25,9 +25,12 @@ export interface ApiResponse<T> {
 export interface SpiritSummary {
   race_id: number;
   spirit_name: string;
+  rarity_code: number | null;
   rarity_name: string | null;
   position_name: string | null;
   jobs: string[];
+  elements: string[];
+  eras: string[];
 }
 
 /** 筛选项 */
@@ -50,6 +53,8 @@ export interface FilterDict {
 export interface SpiritListQuery {
   q?: string;
   rarity?: number;
+  element?: string;
+  era?: string;
   job?: number;
   position?: string;
   page?: number;
@@ -91,6 +96,7 @@ export interface SpiritSkinDetail {
 export interface SpiritDetail {
   race_id: number;
   spirit_name: string;
+  rarity_code: number | null;
   rarity_name: string | null;
   position_name: string | null;
   lineage_race_id: number | null;

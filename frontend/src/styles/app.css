@@ -1,0 +1,336 @@
+/* ============================================================
+   奥奇传说 · 全局布局样式
+   依赖 aoqi.css（材质系统 token 与材质类）
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  color: var(--aq-ink);
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--aq-bg);
+  overflow-x: hidden;
+}
+
+/* 页面主容器 */
+.app-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 20px 24px 48px;
+}
+
+/* 顶部导航 */
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+}
+.app-nav__brand {
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: -0.04em;
+  margin-right: 12px;
+  background: conic-gradient(from 220deg, oklch(0.90 0.10 205), oklch(0.85 0.14 300), oklch(0.90 0.12 60), oklch(0.88 0.12 160), oklch(0.90 0.10 205));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.app-nav__link {
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--aq-muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 150ms ease, background 150ms ease;
+  cursor: pointer;
+}
+.app-nav__link:hover {
+  color: var(--aq-ink);
+}
+.app-nav__link.active {
+  color: #fff;
+  background: oklch(0.70 0.10 210 / 0.18);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.15);
+}
+
+/* 图鉴列表页 */
+.dex-header {
+  padding: 20px 24px;
+  margin-bottom: 18px;
+}
+.dex-header h1 {
+  margin: 0 0 6px;
+  font-size: clamp(28px, 4vw, 44px);
+  letter-spacing: -0.05em;
+}
+.dex-header p {
+  margin: 0;
+  color: var(--aq-muted);
+  font-size: 14px;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  align-items: center;
+}
+.filter-bar__search {
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  border: 1px solid oklch(0.85 0.05 225 / 0.16);
+  background: oklch(0.20 0.04 248 / 0.45);
+  color: var(--aq-ink);
+  font: inherit;
+  outline: none;
+}
+.filter-bar__search::placeholder {
+  color: var(--aq-muted);
+}
+.filter-bar__search:focus {
+  border-color: oklch(0.80 0.11 205 / 0.6);
+}
+.filter-bar select {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid oklch(0.85 0.05 225 / 0.16);
+  background: oklch(0.20 0.04 248 / 0.45);
+  color: var(--aq-ink);
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}
+.filter-bar select:focus {
+  border-color: oklch(0.80 0.11 205 / 0.6);
+}
+.filter-bar__count {
+  color: var(--aq-muted);
+  font-size: 13px;
+  margin-left: auto;
+}
+
+/* 卡片网格 */
+.dex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* 精灵卡片 */
+.spirit-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid oklch(0.85 0.05 225 / 0.12);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.spirit-card:hover {
+  transform: translateY(-3px);
+  border-color: oklch(0.80 0.11 205 / 0.4);
+}
+.spirit-card.active {
+  border-color: oklch(0.80 0.11 205 / 0.7);
+  box-shadow: 0 0 0 1px oklch(0.80 0.11 205 / 0.35), 0 16px 40px oklch(0.60 0.14 210 / 0.2);
+}
+
+/* 分页 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+.pagination button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid oklch(0.85 0.05 225 / 0.16);
+  background: oklch(0.20 0.04 248 / 0.45);
+  color: var(--aq-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.pagination span {
+  color: var(--aq-muted);
+  font-size: 14px;
+}
+
+/* 详情页 */
+.detail-shell {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.detail-panel {
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.detail-panel h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+.detail-meta {
+  color: var(--aq-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.detail-section {
+  margin-bottom: 16px;
+}
+.detail-section h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: var(--aq-muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid oklch(0.85 0.05 225 / 0.08);
+  font-size: 14px;
+}
+.detail-row span:first-child {
+  color: var(--aq-muted);
+}
+.detail-row span:last-child {
+  color: var(--aq-ink);
+  text-align: right;
+  max-width: 70%;
+}
+
+/* 页签 */
+.tabs {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: oklch(0.14 0.03 250 / 0.5);
+}
+.tabs button {
+  flex: 1;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--aq-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease;
+}
+.tabs button.active {
+  color: #fff;
+  background: oklch(0.70 0.10 210 / 0.22);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18);
+}
+
+/* 技能列表 */
+.skill-item {
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: var(--aq-r-sm);
+  background: oklch(0.20 0.04 248 / 0.4);
+  border: 1px solid oklch(0.85 0.05 225 / 0.10);
+}
+.skill-item__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.skill-item__slot {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--aq-cyan);
+  background: oklch(0.70 0.10 210 / 0.15);
+  white-space: nowrap;
+}
+.skill-item__name {
+  font-weight: 700;
+  font-size: 15px;
+}
+.skill-item__type {
+  color: var(--aq-muted);
+  font-size: 12px;
+}
+.skill-item__desc {
+  color: oklch(0.82 0.03 225);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 皮肤列表 */
+.skin-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: var(--aq-r-sm);
+  background: oklch(0.20 0.04 248 / 0.4);
+  border: 1px solid oklch(0.85 0.05 225 / 0.10);
+}
+.skin-item__name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.skin-item__grade {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* 加载与空状态 */
+.state-hint {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--aq-muted);
+  font-size: 15px;
+}
+
+/* 通用标签胶囊 */
+.tag-pill {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--aq-ink);
+  background: oklch(0.70 0.10 210 / 0.14);
+  border: 1px solid oklch(0.85 0.05 225 / 0.12);
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .detail-shell {
+    grid-template-columns: 1fr;
+  }
+  .dex-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}

@@ -21,6 +21,8 @@ router = APIRouter(prefix="/spirits", tags=["spirits"])
 def list_spirits(
     q: Optional[str] = Query(None, description="名字模糊搜索"),
     rarity: Optional[int] = Query(None, description="稀有度代码"),
+    element: Optional[str] = Query(None, description="元素代码"),
+    era: Optional[str] = Query(None, description="时代代码"),
     job: Optional[int] = Query(None, description="职业 ID"),
     position: Optional[str] = Query(None, description="站位代码"),
     page: int = Query(1, ge=1),
@@ -29,7 +31,7 @@ def list_spirits(
 ):
     """精灵列表：分页 + 多维筛选。"""
     items, total = spirit_service.list_spirits(
-        db, q=q, rarity=rarity, job=job, position=position, page=page, size=size
+        db, q=q, rarity=rarity, element=element, era=era, job=job, position=position, page=page, size=size
     )
     pages = (total + size - 1) // size if total else 0
     return ok(

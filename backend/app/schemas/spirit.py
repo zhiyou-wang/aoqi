@@ -16,9 +16,12 @@ class SpiritSummary(BaseModel):
 
     race_id: int
     spirit_name: str
+    rarity_code: Optional[int] = None
     rarity_name: Optional[str] = None
     position_name: Optional[str] = None
     jobs: List[str] = Field(default_factory=list)
+    elements: List[str] = Field(default_factory=list)
+    eras: List[str] = Field(default_factory=list)
 
 
 class FilterOption(BaseModel):
@@ -78,6 +81,7 @@ class SpiritDetail(BaseModel):
 
     race_id: int
     spirit_name: str
+    rarity_code: Optional[int] = None
     rarity_name: Optional[str] = None
     position_name: Optional[str] = None
     lineage_race_id: Optional[int] = None

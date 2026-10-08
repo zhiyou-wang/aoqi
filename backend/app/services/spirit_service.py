@@ -15,14 +15,20 @@ from sqlalchemy.orm import Session
 
 from app.schemas.spirit import FilterDict, FilterOption, SpiritDetail, SpiritSummary
 
-# 列表查询：聚合职业（按优先级排序）
+# 列表查询：聚合职业（按优先级排序）、元素、时代
 _LIST_SQL = """
-SELECT s.race_id, s.spirit_name,
+SELECT s.race_id, s.spirit_name, s.rarity_code,
        r.rarity_name, p.position_name,
        (SELECT LISTAGG(j.job_name, ',') WITHIN GROUP (ORDER BY sj.priority_no)
           FROM aoqi_spirit_job sj
           JOIN aoqi_job j ON sj.job_id = j.job_id
-         WHERE sj.race_id = s.race_id) AS jobs
+         WHERE sj.race_id = s.race_id) AS jobs,
+       (SELECT LISTAGG(se.element_code, ',') WITHIN GROUP (ORDER BY se.element_code)
+          FROM aoqi_spirit_element se
+         WHERE se.race_id = s.race_id) AS elements,
+       (SELECT LISTAGG(sr.era_code, ',') WITHIN GROUP (ORDER BY sr.era_code)
+          FROM aoqi_spirit_era sr
+         WHERE sr.race_id = s.race_id) AS eras
   FROM aoqi_spirit s
   LEFT JOIN aoqi_rarity r   ON s.rarity_code = r.rarity_code
   LEFT JOIN aoqi_position p ON s.position_code = p.position_code
@@ -34,6 +40,8 @@ def list_spirits(
     *,
     q: Optional[str] = None,
     rarity: Optional[int] = None,
+    element: Optional[str] = None,
+    era: Optional[str] = None,
     job: Optional[int] = None,
     position: Optional[str] = None,
     page: int = 1,
@@ -56,6 +64,12 @@ def list_spirits(
         # 职业筛选需要关联表
         where.append("EXISTS (SELECT 1 FROM aoqi_spirit_job sjj WHERE sjj.race_id = s.race_id AND sjj.job_id = :job)")
         params["job"] = job
+    if element:
+        where.append("EXISTS (SELECT 1 FROM aoqi_spirit_element se WHERE se.race_id = s.race_id AND se.element_code = :element)")
+        params["element"] = element
+    if era:
+        where.append("EXISTS (SELECT 1 FROM aoqi_spirit_era sr WHERE sr.race_id = s.race_id AND sr.era_code = :era)")
+        params["era"] = era
 
     where_sql = (" WHERE " + " AND ".join(where)) if where else ""
 
@@ -80,9 +94,12 @@ def list_spirits(
         SpiritSummary(
             race_id=row["race_id"],
             spirit_name=row["spirit_name"],
+            rarity_code=row["rarity_code"],
             rarity_name=row["rarity_name"],
             position_name=row["position_name"],
             jobs=[j for j in (row["jobs"] or "").split(",") if j],
+            elements=[e for e in (row["elements"] or "").split(",") if e],
+            eras=[e for e in (row["eras"] or "").split(",") if e],
         )
         for row in rows
     ]
@@ -242,6 +259,7 @@ def get_detail(db: Session, race_id: int) -> SpiritDetail | None:
     return SpiritDetail(
         race_id=base["race_id"],
         spirit_name=base["spirit_name"],
+        rarity_code=base["rarity_code"],
         rarity_name=base["rarity_name"],
         position_name=base["position_name"],
         lineage_race_id=base["lineage_race_id"],
