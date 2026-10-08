@@ -7,9 +7,10 @@ from pathlib import Path
 
 from ljread import rows_by_schema
 
-ROOT = Path(__file__).resolve().parents[2]
+BACKEND = Path(__file__).resolve().parents[1]  # backend/
+ROOT = BACKEND.parent                          # aoqi 根
 LUA = ROOT / "_raw" / "lua"
-DATA = ROOT / "data"
+DATA = BACKEND / "data"
 WEB = ROOT / "prototype"
 
 RARITY = {1: "初代", 2: "幻兽", 3: "超能", 4: "传说"}

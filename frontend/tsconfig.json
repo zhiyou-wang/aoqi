@@ -15,12 +15,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@aoqi/shared": ["../../packages/shared/src/index.ts"],
-      "@aoqi/ui": ["../../packages/ui/src/index.ts"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
 }

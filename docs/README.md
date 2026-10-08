@@ -13,10 +13,10 @@
 精灵表已经从本机安装包的配置里生成：
 
 - 打开 `prototype/index.html`，可以按稀有度、属性、职业、时代、站位筛选。
-- `data/spirits.csv` 是精灵主表，可以导入飞书或多维表格。
-- `data/spirit_jobs.csv` 是职业，一只精灵多行。
-- `data/skins.csv` 是皮肤，一只精灵多行。
-- `data/spirits.sqlite` 里有同名的三张表。
+- `backend/data/spirits.csv` 是精灵主表，可以导入飞书或多维表格。
+- `backend/data/spirit_jobs.csv` 是职业，一只精灵多行。
+- `backend/data/skins.csv` 是皮肤，一只精灵多行。
+- `backend/data/spirits.sqlite` 里有同名的三张表。
 
 配置来自模拟器里的 `logicconfig`。当前共 946 只有名字的精灵，其中 431 只有图鉴册编号。稀有度数字 4 已对照游戏内传说角标；1、2、3 依次记为初代、幻兽、超能。
 

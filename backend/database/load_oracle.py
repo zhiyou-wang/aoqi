@@ -7,10 +7,11 @@ from pathlib import Path
 
 import oracledb
 
-ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "data"
+BACKEND = Path(__file__).resolve().parents[1]  # backend/
+ROOT = BACKEND.parent                          # aoqi 根
+DATA = BACKEND / "data"
 LUA = ROOT / "_raw" / "lua"
-sys.path.insert(0, str(ROOT / "pipeline" / "tools"))
+sys.path.insert(0, str(BACKEND / "scripts"))
 from ljread import load_bytecode
 
 JOBS = {

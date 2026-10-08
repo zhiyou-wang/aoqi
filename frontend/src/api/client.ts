@@ -1,7 +1,7 @@
 /**
  * API 客户端：统一请求封装。
  *
- * 契约类型来自 @aoqi/shared，与后端 Pydantic 模型一致。
+ * 契约类型来自 shared/（与后端 Pydantic 模型一致）。
  * 前端 dev 通过 vite proxy 转发到后端，无需 CORS。
  */
 import type {
@@ -11,7 +11,7 @@ import type {
   SpiritDetail,
   SpiritListQuery,
   SpiritSummary,
-} from '@aoqi/shared';
+} from '../shared';
 
 const BASE = '/api/v1';
 
