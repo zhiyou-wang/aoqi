@@ -4,6 +4,7 @@ import { SpiritDetailPage } from './pages/SpiritDetailPage';
 import { SkinsPage } from './pages/SkinsPage';
 import { BondsPage } from './pages/BondsPage';
 import { RelationsPage } from './pages/RelationsPage';
+import { GrowPage } from './pages/GrowPage';
 import { HomePage } from './pages/HomePage';
 import { GlassPanel } from './components/GlassPanel';
 import type { SpiritSummary } from './shared';
@@ -28,6 +29,7 @@ export default function App() {
     { path: '/skins', label: '皮肤' },
     { path: '/bonds', label: '羁绊' },
     { path: '/relations', label: '关系' },
+    { path: '/grow', label: '养成' },
   ];
 
   function isActive(itemPath: string): boolean {
@@ -51,6 +53,8 @@ export default function App() {
     page = <BondsPage />;
   } else if (path === '/relations') {
     page = <RelationsPage />;
+  } else if (path === '/grow') {
+    page = <GrowPage />;
   } else {
     page = <HomePage />;
   }

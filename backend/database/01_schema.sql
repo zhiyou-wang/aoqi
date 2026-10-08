@@ -390,5 +390,107 @@ INSERT INTO aoqi_skill_slot (slot_code, slot_name, sort_no) VALUES ('YUANJI', '�
 INSERT INTO aoqi_skill_slot (slot_code, slot_name, sort_no) VALUES ('SOUL', '唤灵', 13);
 INSERT INTO aoqi_skill_slot (slot_code, slot_name, sort_no) VALUES ('AWAKEN', '觉醒', 14);
 
+/* ============================================================
+   养成系统
+   ============================================================ */
+
+/* 养成项字典：精灵养成 / 公共养成 / 其他养成 三类 */
+CREATE TABLE aoqi_grow_item (
+  grow_item_code  VARCHAR2(20 CHAR) NOT NULL,
+  grow_item_name  VARCHAR2(20 CHAR) NOT NULL,
+  category        VARCHAR2(10 CHAR) NOT NULL,
+  sort_no         NUMBER        NOT NULL,
+  CONSTRAINT pk_aoqi_grow_item PRIMARY KEY (grow_item_code),
+  CONSTRAINT uk_aoqi_grow_item_name UNIQUE (grow_item_name),
+  CONSTRAINT ck_aoqi_grow_item_category CHECK (category IN ('SPIRIT', 'COMMON', 'OTHER'))
+);
+
+/* 精灵类型 → 养成项映射（继承 + 扩展） */
+CREATE TABLE aoqi_era_grow (
+  era_code        VARCHAR2(20 CHAR) NOT NULL,
+  grow_item_code  VARCHAR2(20 CHAR) NOT NULL,
+  sort_no         NUMBER        NOT NULL,
+  CONSTRAINT pk_aoqi_era_grow PRIMARY KEY (era_code, grow_item_code),
+  CONSTRAINT fk_aoqi_era_grow_era FOREIGN KEY (era_code) REFERENCES aoqi_era (era_code),
+  CONSTRAINT fk_aoqi_era_grow_item FOREIGN KEY (grow_item_code) REFERENCES aoqi_grow_item (grow_item_code)
+);
+
+/* 精灵养成实例（留空，数据待抽取） */
+CREATE TABLE aoqi_spirit_grow (
+  race_id         NUMBER        NOT NULL,
+  grow_item_code  VARCHAR2(20 CHAR) NOT NULL,
+  grow_value      VARCHAR2(400 CHAR),
+  CONSTRAINT pk_aoqi_spirit_grow PRIMARY KEY (race_id, grow_item_code),
+  CONSTRAINT fk_aoqi_spirit_grow_spirit FOREIGN KEY (race_id) REFERENCES aoqi_spirit (race_id),
+  CONSTRAINT fk_aoqi_spirit_grow_item FOREIGN KEY (grow_item_code) REFERENCES aoqi_grow_item (grow_item_code)
+);
+
+COMMENT ON TABLE aoqi_grow_item IS '养成项字典。category：SPIRIT 精灵养成 / COMMON 公共养成 / OTHER 其他养成。';
+COMMENT ON TABLE aoqi_era_grow IS '精灵类型（时代）与养成项的映射。普通精灵6项，神启/神曜各7项，源起6项（源核替代潜能）。';
+COMMENT ON TABLE aoqi_spirit_grow IS '精灵养成实例。grow_value 暂用文本存数据（等级数值、装备列表等），格式待数据抽取时定。';
+
+CREATE INDEX ix_aoqi_era_grow_item ON aoqi_era_grow (grow_item_code);
+CREATE INDEX ix_aoqi_spirit_grow_item ON aoqi_spirit_grow (grow_item_code);
+
+/* 养成项字典数据 */
+-- 精灵养成（9 项）
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('LEVEL', '等级', 'SPIRIT', 1);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('TALENT', '天赋', 'SPIRIT', 2);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('EQUIP', '装备', 'SPIRIT', 3);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('STAR', '星神', 'SPIRIT', 4);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('GLYPH', '灵纹', 'SPIRIT', 5);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('POTENTIAL', '潜能', 'SPIRIT', 6);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('DIVINE_MIGHT', '神启神威', 'SPIRIT', 7);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('DIVINE_GRID', '神曜神格', 'SPIRIT', 8);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('SOURCE_CORE', '源核', 'SPIRIT', 9);
+
+-- 公共养成（5 项）
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('FORMATION', '阵法', 'COMMON', 1);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('MOUNT', '坐骑', 'COMMON', 2);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('COLLECTION', '收藏品', 'COMMON', 3);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('FAVOR', '好感度', 'COMMON', 4);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('GUARD', '守护', 'COMMON', 5);
+
+-- 其他养成（4 项）
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('AWAKEN_LEVEL', '觉醒等级', 'OTHER', 1);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('DEX', '图鉴', 'OTHER', 2);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('BOND_FORM', '上阵羁绊', 'OTHER', 3);
+INSERT INTO aoqi_grow_item (grow_item_code, grow_item_name, category, sort_no) VALUES ('BOND_COLLECT', '收集羁绊', 'OTHER', 4);
+
+/* 精灵类型 → 养成项映射 */
+-- 普通精灵（BASE）：等级、天赋、装备、星神、灵纹、潜能
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('BASE', 'LEVEL', 1);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('BASE', 'TALENT', 2);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('BASE', 'EQUIP', 3);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('BASE', 'STAR', 4);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('BASE', 'GLYPH', 5);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('BASE', 'POTENTIAL', 6);
+
+-- 神启精灵（SHENQI）：基础 + 神启神威
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENQI', 'LEVEL', 1);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENQI', 'TALENT', 2);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENQI', 'EQUIP', 3);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENQI', 'STAR', 4);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENQI', 'GLYPH', 5);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENQI', 'POTENTIAL', 6);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENQI', 'DIVINE_MIGHT', 7);
+
+-- 神曜精灵（SHENYAO）：基础 + 神曜神格
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENYAO', 'LEVEL', 1);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENYAO', 'TALENT', 2);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENYAO', 'EQUIP', 3);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENYAO', 'STAR', 4);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENYAO', 'GLYPH', 5);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENYAO', 'POTENTIAL', 6);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('SHENYAO', 'DIVINE_GRID', 7);
+
+-- 源起精灵（YUANQI）：等级、天赋、装备、星神、灵纹、源核（源核替代潜能）
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('YUANQI', 'LEVEL', 1);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('YUANQI', 'TALENT', 2);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('YUANQI', 'EQUIP', 3);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('YUANQI', 'STAR', 4);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('YUANQI', 'GLYPH', 5);
+INSERT INTO aoqi_era_grow (era_code, grow_item_code, sort_no) VALUES ('YUANQI', 'SOURCE_CORE', 6);
+
 COMMIT;
 EXIT;

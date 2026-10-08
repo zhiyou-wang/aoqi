@@ -8,12 +8,14 @@ import type {
   ApiResponse,
   BondOverview,
   FilterDict,
+  GrowConfig,
   MaterialConfig,
   RelationOverview,
   SkinDetail,
   SkinGrade,
   SkinSummary,
   SpiritDetail,
+  SpiritGrowEntry,
   SpiritListQuery,
   SpiritSummary,
 } from '../shared';
@@ -79,4 +81,14 @@ export function fetchBonds() {
 /** 关系图总览 */
 export function fetchRelations() {
   return request<RelationOverview>('/relations');
+}
+
+/** 养成配置 */
+export function fetchGrowConfig() {
+  return request<GrowConfig>('/grow/config');
+}
+
+/** 精灵养成数据 */
+export function fetchSpiritGrow(raceId: number) {
+  return request<SpiritGrowEntry[]>(`/grow/${raceId}`);
 }

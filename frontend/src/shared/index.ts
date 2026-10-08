@@ -247,3 +247,33 @@ export interface RelationOverview {
   groups: RelationGroup[];
   lines: RelationLine[];
 }
+
+// ---- 养成域 ----
+
+/** 养成项 */
+export interface GrowItem {
+  grow_item_code: string;
+  grow_item_name: string;
+  category: 'SPIRIT' | 'COMMON' | 'OTHER';
+  sort_no: number;
+}
+
+/** 某精灵类型的一个养成项 */
+export interface EraGrowItem {
+  grow_item_code: string;
+  grow_item_name: string;
+  sort_no: number;
+}
+
+/** 养成配置总览 */
+export interface GrowConfig {
+  items: GrowItem[];
+  era_map: Record<string, EraGrowItem[]>;
+}
+
+/** 精灵的某条养成数据 */
+export interface SpiritGrowEntry {
+  grow_item_code: string;
+  grow_item_name: string | null;
+  grow_value: string | null;
+}

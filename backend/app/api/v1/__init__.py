@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.v1 import bonds, health, material, relations, skins, spirits
+from app.api.v1 import bonds, grow, health, material, relations, skins, spirits
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(health.router)
@@ -15,3 +15,4 @@ api_router.include_router(material.router)
 api_router.include_router(skins.router)
 api_router.include_router(bonds.router)
 api_router.include_router(relations.router)
+api_router.include_router(grow.router)

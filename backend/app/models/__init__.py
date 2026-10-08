@@ -5,6 +5,7 @@
 """
 from app.models.base import Base
 from app.models.bond import BondCollect, BondForm, BondFormMember, Evolution
+from app.models.grow import EraGrow, GrowItem, SpiritGrow
 from app.models.skill import Skill, SkillLevel, SkillSlot, SpiritSkill
 from app.models.skin import Skin, SkinGrade, SpiritSkin
 from app.models.spirit import (
@@ -30,4 +31,6 @@ __all__ = [
     "Skin", "SkinGrade", "SpiritSkin",
     # bond & evolution
     "Evolution", "BondForm", "BondFormMember", "BondCollect",
+    # grow
+    "GrowItem", "EraGrow", "SpiritGrow",
 ]
