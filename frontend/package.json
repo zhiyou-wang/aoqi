@@ -1,5 +1,5 @@
 {
-  "name": "@aoqi/web",
+  "name": "aoqi-frontend",
   "version": "0.1.0",
   "private": true,
   "type": "module",

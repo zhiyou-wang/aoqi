@@ -50,12 +50,15 @@ python -m uvicorn app.main:app --reload --port 8000
 ### 前端
 
 ```bash
-npm install                    # 根目录，安装 workspace
-npm run dev:web                # 或 cd frontend && npm run dev
+cd frontend
+npm install                    # 首次
+npm run dev                    # 启动开发服务器
 ```
 
 - 页面：`http://localhost:5173`
 - dev 时 `/api` 代理到后端 8000，无需 CORS。
+
+> 前端依赖在 `frontend/node_modules`，后端依赖在 `backend/.venv`，前后端完全独立。
 
 ## 自由度 / 可升级性 / 可调整性设计
 

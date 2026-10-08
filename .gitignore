@@ -46,4 +46,4 @@ AndroidLiquidGlass-kmp.zip
 Thumbs.db
 
 # Oracle 凭证
-apps/api/.env
+backend/.env
