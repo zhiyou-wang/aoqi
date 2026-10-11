@@ -11,7 +11,7 @@ from app.schemas.grow import EraGrowItem, GrowConfig, GrowItem
 from app.schemas.spirit import FilterDict, FilterOption, SpiritDetail, SpiritSummary
 from app.schemas.bond import BondForm, BondCollect, BondOverview
 from app.schemas.relation import RelationGroup, RelationLine, RelationOverview
-from app.schemas.skin import SkinDetail, SkinGrade, SkinSummary
+from app.schemas.skin import SkinGrade, SkinSummary
 
 
 class TestSpiritSummary:
@@ -104,7 +104,3 @@ class TestSkin:
     def test_skin_summary_wear_count(self):
         s = SkinSummary(skin_id=1, skin_name="皮肤", wear_count=3)
         assert s.wear_count == 3
-
-    def test_skin_detail_wearers_default(self):
-        d = SkinDetail(skin_id=1, skin_name="皮肤")
-        assert d.wearers == []

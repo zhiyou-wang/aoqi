@@ -16,7 +16,7 @@ body,
 
 body {
   color: var(--aq-ink);
-  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: "SF Pro", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background: var(--aq-bg);
   overflow-x: hidden;
 }
@@ -35,8 +35,10 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 18px;
-  margin-bottom: 18px;
+  padding: 10px 16px;
+  margin-bottom: 22px;
+  /* 导航=浮层透镜档：比内容面板更薄更透 */
+  --aq-blur: 14px;
 }
 .app-nav__brand {
   font-weight: 900;
@@ -48,22 +50,79 @@ body {
   background-clip: text;
   color: transparent;
 }
-.app-nav__link {
+/* ===== 分段选择器导航（液态玻璃滑块） ===== */
+.seg-nav {
+  --thumb-scale: 1.3;
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  touch-action: none;
+  user-select: none;
+}
+.seg-nav__indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  border-radius: 999px;
+  /* 半透液态玻璃：即便压在标签上、或选中态浮层尚未就位，文字也不会被盖没 */
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.1);
+  backdrop-filter: blur(14px) saturate(180%) brightness(1.1);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  z-index: 2;
+  pointer-events: none;
+  transition:
+    left 0.4s cubic-bezier(0.2, 0.6, 0.4, 1),
+    width 0.4s cubic-bezier(0.2, 0.6, 0.4, 1),
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.seg-nav.dragging .seg-nav__indicator {
+  transition: left 0s, width 0s, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.seg-nav__indicator.jelly {
+  transform: translateY(var(--dy, 0px)) scale(var(--thumb-scale));
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 0 20px rgba(79, 172, 254, 0.5),
+    0 0 40px rgba(255, 110, 180, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.seg-nav__item {
+  position: relative;
+  z-index: 1;
   padding: 8px 16px;
   border-radius: 999px;
-  color: var(--aq-muted);
-  text-decoration: none;
   font-size: 14px;
-  transition: color 150ms ease, background 150ms ease;
+  font-family: inherit;
+  color: oklch(0.24 0.02 250);
+  background: transparent;
+  border: none;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
-.app-nav__link:hover {
-  color: var(--aq-ink);
+.seg-nav__item:hover {
+  color: oklch(0.14 0.02 250);
 }
-.app-nav__link.active {
-  color: #fff;
-  background: oklch(0.70 0.10 210 / 0.18);
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.15);
+.seg-nav__item.active {
+  z-index: 3;
+  color: oklch(0.16 0.02 250);
+  font-weight: 600;
+}
+/* 内嵌分段 Tab：整行铺满、各项均分 */
+.seg-nav--block {
+  display: flex;
+  width: 100%;
+}
+.seg-nav--block .seg-nav__item {
+  flex: 1;
 }
 
 /* 图鉴列表页 */
@@ -90,14 +149,20 @@ body {
   padding: 16px 18px;
   margin-bottom: 18px;
   align-items: center;
+  position: relative;
+  z-index: 50; /* 下拉菜单下探时浮于卡片网格之上 */
+  overflow: visible; /* 允许下拉菜单溢出玻璃面板 */
 }
 .filter-bar__search {
   flex: 1 1 240px;
   min-width: 200px;
   padding: 11px 16px;
   border-radius: 999px;
-  border: 1px solid oklch(0.85 0.05 225 / 0.16);
-  background: oklch(0.20 0.04 248 / 0.45);
+  border: 1px solid var(--aq-surface-border);
+  background: var(--aq-surface);
+  -webkit-backdrop-filter: var(--aq-surface-blur);
+  backdrop-filter: var(--aq-surface-blur);
+  box-shadow: var(--aq-surface-shadow);
   color: var(--aq-ink);
   font: inherit;
   outline: none;
@@ -108,25 +173,119 @@ body {
 .filter-bar__search:focus {
   border-color: oklch(0.80 0.11 205 / 0.6);
 }
-.filter-bar select {
+/* Pull-down button（Apple HIG）：玻璃胶囊 + chevron，弹出液态玻璃菜单 */
+.pd {
+  position: relative;
+}
+.pd__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 10px 14px;
   border-radius: 999px;
-  border: 1px solid oklch(0.85 0.05 225 / 0.16);
-  background: oklch(0.20 0.04 248 / 0.45);
+  border: 1px solid var(--aq-surface-border);
+  background: var(--aq-surface);
+  -webkit-backdrop-filter: var(--aq-surface-blur);
+  backdrop-filter: var(--aq-surface-blur);
+  box-shadow: var(--aq-surface-shadow);
   color: var(--aq-ink);
   font: inherit;
+  font-size: 14px;
   cursor: pointer;
   outline: none;
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease;
 }
-.filter-bar select:focus {
-  border-color: oklch(0.80 0.11 205 / 0.6);
+.pd__btn:active {
+  transform: scale(0.94);
 }
-.filter-bar__count {
-  color: var(--aq-muted);
-  font-size: 13px;
-  margin-left: auto;
+.pd__btn:focus-visible {
+  border-color: oklch(0.8 0.11 205 / 0.6);
+}
+.pd__label {
+  white-space: nowrap;
+}
+.pd__chevron {
+  width: 15px;
+  height: 15px;
+  opacity: 0.65;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pd.is-open .pd__chevron {
+  transform: rotate(180deg);
 }
 
+/* 菜单：浅色液态玻璃浮层，向下展开，visibility 驱动以保留出现动画 */
+.pd__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 200;
+  min-width: 100%;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(22px) saturate(180%) brightness(1.05);
+  backdrop-filter: blur(22px) saturate(180%) brightness(1.05);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 12px 40px -8px rgba(20, 40, 80, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1),
+    visibility 0s linear 0.22s;
+}
+.pd.is-open .pd__menu {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1),
+    visibility 0s;
+}
+
+.pd__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  color: #0a2540;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.pd__item:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+.pd__item:active {
+  background: rgba(255, 255, 255, 0.72);
+}
+.pd__item.is-selected {
+  color: #0088ff;
+  font-weight: 600;
+}
+.pd__check {
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+}
+.pd__item.is-selected .pd__check {
+  opacity: 1;
+}
 /* 卡片网格 */
 .dex-grid {
   display: grid;
@@ -135,20 +294,49 @@ body {
   margin-bottom: 24px;
 }
 
-/* 精灵卡片 */
+/* 精灵卡片：官方 RoundedRectangle(32dp) 大卡片；按压液态由 JS 驱动（见 SpiritCard.tsx） */
 .spirit-card {
   position: relative;
   overflow: hidden;
+  border-radius: var(--aq-r-lg);
   border: 1px solid oklch(0.85 0.05 225 / 0.12);
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 .spirit-card:hover {
-  transform: translateY(-3px);
   border-color: oklch(0.80 0.11 205 / 0.4);
 }
 .spirit-card.active {
   border-color: oklch(0.80 0.11 205 / 0.7);
   box-shadow: 0 0 0 1px oklch(0.80 0.11 205 / 0.35), 0 16px 40px oklch(0.60 0.14 210 / 0.2);
+}
+/* 内容抬到光斑之上 */
+.spirit-card > *:not(.spirit-card__spot) {
+  position: relative;
+  z-index: 1;
+}
+/* 按压指尖液态光斑：加色（plus-lighter）贴手指，强度/位置由 JS 写 CSS 变量 */
+.spirit-card__spot {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: var(--card-spot-a, 0);
+  background: radial-gradient(
+    circle var(--card-spot-r, 90px) at var(--card-spot-x, 50%) var(--card-spot-y, 50%),
+    oklch(1 0 0 / 0.3),
+    oklch(1 0 0 / 0.07) 26%,
+    transparent 56%
+  );
+  mix-blend-mode: plus-lighter;
+}
+.spirit-card.is-pressing {
+  border-color: oklch(0.90 0.08 210 / 0.5);
+  box-shadow:
+    inset 0 1px 6px oklch(1 0 0 / 0.22),
+    inset 0 0 18px oklch(0.85 0.12 210 / 0.26);
 }
 
 /* 分页 */
@@ -157,19 +345,6 @@ body {
   justify-content: center;
   align-items: center;
   gap: 14px;
-}
-.pagination button {
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid oklch(0.85 0.05 225 / 0.16);
-  background: oklch(0.20 0.04 248 / 0.45);
-  color: var(--aq-ink);
-  font: inherit;
-  cursor: pointer;
-}
-.pagination button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 .pagination span {
   color: var(--aq-muted);
@@ -223,40 +398,16 @@ body {
   max-width: 70%;
 }
 
-/* 页签 */
-.tabs {
-  display: flex;
-  gap: 6px;
-  padding: 6px;
-  margin-bottom: 16px;
-  border-radius: 999px;
-  background: oklch(0.14 0.03 250 / 0.5);
-}
-.tabs button {
-  flex: 1;
-  padding: 9px 14px;
-  border: 0;
-  border-radius: 999px;
-  color: var(--aq-muted);
-  background: transparent;
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 150ms ease, background 150ms ease;
-}
-.tabs button.active {
-  color: #fff;
-  background: oklch(0.70 0.10 210 / 0.22);
-  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18);
-}
-
 /* 技能列表 */
 .skill-item {
   padding: 14px;
   margin-bottom: 10px;
   border-radius: var(--aq-r-sm);
-  background: oklch(0.20 0.04 248 / 0.4);
-  border: 1px solid oklch(0.85 0.05 225 / 0.10);
+  background: var(--aq-surface);
+  -webkit-backdrop-filter: var(--aq-surface-blur);
+  backdrop-filter: var(--aq-surface-blur);
+  border: 1px solid var(--aq-surface-border);
+  box-shadow: var(--aq-surface-shadow);
 }
 .skill-item__head {
   display: flex;
@@ -266,11 +417,15 @@ body {
 }
 .skill-item__slot {
   font-size: 11px;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 999px;
-  color: var(--aq-cyan);
-  background: oklch(0.70 0.10 210 / 0.15);
+  color: var(--aq-ink);
   white-space: nowrap;
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.14), oklch(1 0 0 / 0.06));
+  border: 1px solid oklch(1 0 0 / 0.2);
+  -webkit-backdrop-filter: blur(6px) saturate(1.5) brightness(1.08);
+  backdrop-filter: blur(6px) saturate(1.5) brightness(1.08);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.28);
 }
 .skill-item__name {
   font-weight: 700;
@@ -295,8 +450,11 @@ body {
   padding: 12px 14px;
   margin-bottom: 10px;
   border-radius: var(--aq-r-sm);
-  background: oklch(0.20 0.04 248 / 0.4);
-  border: 1px solid oklch(0.85 0.05 225 / 0.10);
+  background: var(--aq-surface);
+  -webkit-backdrop-filter: var(--aq-surface-blur);
+  backdrop-filter: var(--aq-surface-blur);
+  border: 1px solid var(--aq-surface-border);
+  box-shadow: var(--aq-surface-shadow);
 }
 .skin-item__name {
   font-weight: 600;
@@ -310,19 +468,28 @@ body {
 /* 加载与空状态 */
 .state-hint {
   text-align: center;
-  padding: 60px 0;
+  /* 占位接近列表高度，避免 loading→网格撑开时高度跳变 */
+  min-height: 46vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
   color: var(--aq-muted);
   font-size: 15px;
 }
 
-/* 通用标签胶囊 */
+/* 通用标签胶囊：液态玻璃小胶囊（面板 / 卡片内的嵌套 chip） */
 .tag-pill {
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 999px;
   color: var(--aq-ink);
-  background: oklch(0.70 0.10 210 / 0.14);
-  border: 1px solid oklch(0.85 0.05 225 / 0.12);
+  white-space: nowrap;
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.14), oklch(1 0 0 / 0.06));
+  border: 1px solid oklch(1 0 0 / 0.2);
+  -webkit-backdrop-filter: blur(6px) saturate(1.5) brightness(1.08);
+  backdrop-filter: blur(6px) saturate(1.5) brightness(1.08);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.28), 0 4px 10px -6px oklch(0.05 0.03 255 / 0.35);
 }
 
 /* 响应式 */
@@ -333,4 +500,400 @@ body {
   .dex-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
+}
+
+/* ============================================================
+   Overlay scrollbar: the native scrollbar is fully hidden and
+   reserves no gutter (no black track / layout space). A slim white
+   liquid-glass thumb floats above the page; it is invisible at
+   rest and fades in only while scrolling (html.is-scrolling).
+   ============================================================ */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.aq-scrollbar {
+  position: fixed;
+  right: 7px;
+  width: 6px;
+  z-index: 120;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(8px) saturate(180%) brightness(1.08);
+  backdrop-filter: blur(8px) saturate(180%) brightness(1.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 0 10px rgba(255, 255, 255, 0.28);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+html.is-scrolling .aq-scrollbar {
+  opacity: 1;
+}
+
+/* ============================================================
+   WallpaperSwitcher - 左下角悬浮「更换壁纸」
+   ============================================================ */
+.wp {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 900;
+}
+
+/* 圆形玻璃主按钮 */
+.wp__fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  color: #1c2430;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.wp__fab:active {
+  transform: scale(0.9);
+}
+.wp.is-open .wp__fab {
+  transform: rotate(30deg);
+}
+
+/* 弹出面板：在按钮上方 */
+.wp__panel {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 12px);
+  width: 300px;
+  padding: 14px;
+  border-radius: 24px;
+  opacity: 0;
+  transform: translateY(10px) scale(0.97);
+  transform-origin: left bottom;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wp.is-open .wp__panel {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.wp__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.wp__title {
+  font-size: 15px;
+  font-weight: 650;
+  color: #16202e;
+}
+.wp__reset {
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  color: #0a84ff;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 10px;
+  transition: transform 150ms ease, background 150ms ease;
+}
+.wp__reset:hover {
+  background: rgba(10, 132, 255, 0.1);
+}
+.wp__reset:active {
+  transform: scale(0.94);
+}
+
+/* 缩略图网格 */
+.wp__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.wp__item {
+  position: relative;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wp__thumb {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(120, 130, 150, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.wp__thumb img,
+.wp__thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wp__item:active .wp__thumb {
+  transform: scale(0.93);
+}
+.wp__item.is-selected .wp__thumb {
+  box-shadow:
+    inset 0 0 0 2px #0a84ff,
+    0 4px 14px rgba(10, 132, 255, 0.32);
+}
+.wp__name {
+  font-size: 11.5px;
+  color: #22303f;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 选中对勾（缩略图右上角蓝圆） */
+.wp__check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #0a84ff;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+}
+
+/* 上传按钮：通栏玻璃小胶囊 */
+.wp__upload {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 550;
+  color: #0a84ff;
+  background: rgba(10, 132, 255, 0.1);
+  cursor: pointer;
+  transition: transform 150ms ease, background 150ms ease;
+}
+.wp__upload:hover {
+  background: rgba(10, 132, 255, 0.16);
+}
+.wp__upload:active {
+  transform: scale(0.97);
+}
+
+/* ============================================================
+   LiquidBottomTabs - official-style tab bar.
+   Track is transparent (sits inside the app-nav glass); the
+   thumb is a liquid-glass lens; the selected tab is accent blue.
+   ============================================================ */
+.lbt {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  height: 64px;
+  padding: 4px;
+  border-radius: 999px;
+  touch-action: none;
+}
+
+.lbt__thumb {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 16%;
+  height: calc(100% - 8px);
+  border-radius: 999px;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.8);
+  backdrop-filter: blur(18px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+    0 6px 16px -6px rgba(0, 0, 0, 0.28);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.lbt__tab {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 56px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  color: rgba(28, 28, 30, 0.72);
+  user-select: none;
+}
+
+.lbt__icon {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.lbt__label {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.lbt__tab.is-active {
+  color: #0088ff;
+}
+
+.lbt__tab:focus-visible {
+  outline: 2px solid rgba(0, 136, 255, 0.6);
+  outline-offset: 2px;
+}
+
+/* app-nav: brand + LiquidBottomTabs layout */
+.app-nav {
+  padding: 8px 14px;
+}
+.app-nav__brand {
+  margin-right: 6px;
+  white-space: nowrap;
+}
+.app-nav__tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 60px;
+}
+.app-nav__tabs .lbt__tab {
+  height: auto;
+}
+
+@media (max-width: 1000px) {
+  .app-nav__brand { display: none; }
+}
+@media (max-width: 760px) {
+  .lbt__label { display: none; }
+  .app-nav__tabs { height: 52px; }
+}
+
+/* Back variant: official solid saturated-blue capsule, white label.
+   Keeps the liquid press/drag deformation + white fingertip spot. */
+.aq-liquid-btn--back {
+  color: #fff;
+  border: 0;
+  background: linear-gradient(180deg, #2aa8ff 0%, #0088f2 100%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow:
+    0 8px 20px -8px rgba(0, 90, 200, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(0, 40, 120, 0.25);
+}
+.aq-liquid-btn--back.is-active {
+  filter: brightness(1.06);
+  box-shadow:
+    0 10px 24px -8px rgba(0, 90, 200, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 40, 120, 0.3);
+}
+.aq-liquid-btn--back .aq-liquid-btn__label {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 40, 120, 0.35);
+}
+
+/* ============================================================
+   Press state: while pressed the thumb becomes a liquid-glass
+   LENS (bright rim ring, stronger refraction, inner highlights /
+   shadows) and the whole track reacts (subtle pressed inset).
+   transform is driven per-frame, so only color/shadow transitions.
+   ============================================================ */
+.lbt__thumb {
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.lbt__thumb.is-pressing {
+  background: rgba(255, 255, 255, 0.26);
+  border: 1.5px solid rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(26px) saturate(2.1) brightness(1.12);
+  backdrop-filter: blur(26px) saturate(2.1) brightness(1.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 12px 30px -6px rgba(20, 90, 170, 0.38),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 5px rgba(25, 80, 150, 0.2),
+    inset 2.5px 0 5px rgba(255, 255, 255, 0.28),
+    inset -2.5px 0 5px rgba(120, 180, 255, 0.28);
+}
+
+/* Whole nav bar reacts to the press: gentle pressed inset */
+.app-nav.aq-glass:has(.lbt.is-pressing) {
+  box-shadow:
+    0 10px 26px -12px oklch(0.05 0.06 255 / 0.42),
+    inset 0 2px 7px oklch(0.1 0.05 255 / 0.16),
+    inset 0 1px 0 oklch(1 0 0 / 0.5),
+    inset 0 -1px 0 oklch(1 0 0 / 0.35);
+}
+
+/* ============================================================
+   Refit press geometry (official):
+   - bar (.app-nav) is the 64px glass track, padding 4; it grows
+     slightly (scale 1 + 16/width) while pressed;
+   - thumb base height = 56; pressed scaleY 78/56 -> 78, which is
+     TALLER than the 64 bar, so it bulges out top & bottom; the bar
+     must not clip it (overflow visible).
+   ============================================================ */
+.app-nav {
+  padding: 4px 12px;
+  overflow: visible;
+  transition: transform 200ms ease;
+}
+.app-nav:has(.lbt.is-pressing) {
+  transform: scale(1.015);
+}
+.lbt,
+.app-nav__tabs {
+  height: 56px;
+  padding: 0;
+}
+.lbt__thumb {
+  top: 0;
+  height: 100%;
 }

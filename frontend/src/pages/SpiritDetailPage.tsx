@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { fetchSpiritDetail } from '../api/client';
 import { useFetch } from '../lib/useFetch';
 import { GlassPanel } from '../components/GlassPanel';
-import { rarityTone, gradeMaterial } from '../lib/material';
+import { LiquidButton } from '../components/LiquidButton';
+import { SegmentedNav } from '../components/SegmentedNav';
+import { rarityTone } from '../lib/material';
 
 const SCORE_LABELS = ['生命', '攻击', '物防', '魔防', '速度'];
 const SCORE_MAX = 10;
@@ -21,6 +23,7 @@ interface Props {
 export function SpiritDetailPage({ raceId, onBack }: Props) {
   const [tab, setTab] = useState<Tab>('profile');
   const { data: detail, loading, error } = useFetch(
+    'spirit',
     () => fetchSpiritDetail(raceId),
     [raceId],
   );
@@ -33,9 +36,9 @@ export function SpiritDetailPage({ raceId, onBack }: Props) {
       <div className="state-hint">
         未找到精灵 #{raceId}
         <br />
-        <button onClick={onBack} style={{ marginTop: 16, padding: '8px 16px', borderRadius: 999 }}>
-          返回列表
-        </button>
+        <LiquidButton variant="back" onClick={onBack} style={{ marginTop: 16 }}>
+          Back
+        </LiquidButton>
       </div>
     );
   }
@@ -46,20 +49,9 @@ export function SpiritDetailPage({ raceId, onBack }: Props) {
   return (
     <main>
       <GlassPanel className="dex-header" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <button
-          onClick={onBack}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 999,
-            border: '1px solid oklch(0.85 0.05 225 / 0.2)',
-            background: 'oklch(0.20 0.04 248 / 0.4)',
-            color: 'var(--aq-ink)',
-            cursor: 'pointer',
-            font: 'inherit',
-          }}
-        >
-          ← 返回
-        </button>
+        <LiquidButton variant="back" onClick={onBack} style={{ flex: '0 0 auto' }}>
+          Back
+        </LiquidButton>
         <div>
           <h1 style={{ margin: 0, fontSize: 30 }}>{spirit.spirit_name}</h1>
           <p className="detail-meta" style={{ margin: '4px 0 0' }}>
@@ -127,17 +119,16 @@ export function SpiritDetailPage({ raceId, onBack }: Props) {
 
         <section>
           <GlassPanel className="detail-panel">
-            <div className="tabs">
-              <button className={tab === 'profile' ? 'active' : ''} onClick={() => setTab('profile')}>
-                档案
-              </button>
-              <button className={tab === 'skills' ? 'active' : ''} onClick={() => setTab('skills')}>
-                技能 {spirit.skills.length > 0 && `(${spirit.skills.length})`}
-              </button>
-              <button className={tab === 'skins' ? 'active' : ''} onClick={() => setTab('skins')}>
-                皮肤 {spirit.skins.length > 0 && `(${spirit.skins.length})`}
-              </button>
-            </div>
+            <SegmentedNav
+              block
+              items={[
+                { path: 'profile', label: '档案' },
+                { path: 'skills', label: `技能${spirit.skills.length > 0 ? ` (${spirit.skills.length})` : ''}` },
+                { path: 'skins', label: `皮肤${spirit.skins.length > 0 ? ` (${spirit.skins.length})` : ''}` },
+              ]}
+              activeIndex={['profile', 'skills', 'skins'].indexOf(tab)}
+              onSelect={(p) => setTab(p as Tab)}
+            />
 
             {tab === 'profile' && (
               <div>
@@ -200,10 +191,7 @@ export function SpiritDetailPage({ raceId, onBack }: Props) {
                       {skin.is_base === 'Y' && (
                         <span style={{ fontSize: 11, color: 'var(--aq-muted)' }}>本体</span>
                       )}
-                      <span
-                        className={`skin-item__grade ${gradeMaterial(skin.grade_code)}`}
-                        style={{ padding: '3px 10px', borderRadius: 999 }}
-                      >
+                      <span className="skin-item__grade tag-pill">
                         {skin.grade_name ?? '普通'}
                       </span>
                     </div>

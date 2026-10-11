@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # Oracle
     db_user: str = "scott"
-    db_password: str = "123456"
+    db_password: str = ""
     db_dsn: str = "localhost:1521/orclpdb"
     db_schema: str = "SCOTT"
     db_pool_min: int = 1

@@ -2,20 +2,25 @@ import { useState } from 'react';
 import { fetchSkins, fetchSkinGrades } from '../api/client';
 import { useFetch } from '../lib/useFetch';
 import { GlassPanel } from '../components/GlassPanel';
-import { gradeMaterial } from '../lib/material';
+import { GlassCard } from '../components/GlassCard';
+import { Pagination } from '../components/Pagination';
+import { FilterSelect } from '../components/FilterControls';
 
 /**
- * 皮肤库页：品级筛选 + 卡片网格，品级用材质阶梯表达。
+ * 皮肤库页：品级筛选 + 卡片网格，卡片统一为液态玻璃（GlassCard）。
  */
 export function SkinsPage() {
   const [grade, setGrade] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data: grades } = useFetch(fetchSkinGrades, []);
+  const { data: grades } = useFetch('skin-grades', fetchSkinGrades, []);
   const { data: list, loading } = useFetch(
+    'skins',
     () => fetchSkins({ grade: grade || undefined, page, size: 24 }),
     [grade, page],
   );
+
+  const gradeOptions = grades?.data?.map((g) => ({ code: g.grade_code, name: g.grade_name }));
 
   return (
     <main>
@@ -27,20 +32,15 @@ export function SkinsPage() {
       </GlassPanel>
 
       <GlassPanel className="filter-bar">
-        <select
+        <FilterSelect
           value={grade}
-          onChange={(e) => {
-            setGrade(e.target.value);
+          allLabel="全部品级"
+          options={gradeOptions}
+          onChange={(v) => {
+            setGrade(v);
             setPage(1);
           }}
-        >
-          <option value="">全部品级</option>
-          {grades?.data?.map((g) => (
-            <option key={g.grade_code} value={g.grade_code}>
-              {g.grade_name}
-            </option>
-          ))}
-        </select>
+        />
       </GlassPanel>
 
       {loading ? (
@@ -48,11 +48,7 @@ export function SkinsPage() {
       ) : (
         <div className="dex-grid">
           {list?.data?.map((skin) => (
-            <article
-              key={skin.skin_id}
-              className={`spirit-card ${gradeMaterial(skin.grade_code)}`}
-              style={{ borderRadius: 24, padding: 16 }}
-            >
+            <GlassCard key={skin.skin_id} style={{ padding: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ fontSize: 12, color: 'var(--aq-muted)' }}>
                   {skin.grade_name ?? '普通'}
@@ -63,18 +59,12 @@ export function SkinsPage() {
               <div style={{ fontSize: 12, color: 'var(--aq-muted)' }}>
                 {skin.wear_count} 个形态可穿戴
               </div>
-            </article>
+            </GlassCard>
           ))}
         </div>
       )}
 
-      {list?.meta && list.meta.pages > 1 && (
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>上一页</button>
-          <span>第 {page} / {list.meta.pages} 页</span>
-          <button disabled={page >= list.meta.pages} onClick={() => setPage((p) => p + 1)}>下一页</button>
-        </div>
-      )}
+      <Pagination page={page} pages={list?.meta?.pages ?? 0} onChange={setPage} />
     </main>
   );
 }

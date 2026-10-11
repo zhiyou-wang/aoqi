@@ -6,7 +6,7 @@ from typing import List, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.schemas.skin import SkinDetail, SkinGrade, SkinSummary
+from app.schemas.skin import SkinGrade, SkinSummary
 
 
 def list_skins(
@@ -60,41 +60,6 @@ def list_skins(
         for row in rows
     ]
     return items, total
-
-
-def get_skin_detail(db: Session, skin_id: int) -> SkinDetail | None:
-    """皮肤详情（含穿戴关系：哪些形态能穿这件皮肤）。"""
-    base = db.execute(
-        text(
-            "SELECT sk.skin_id, sk.skin_name, sk.grade_code, sg.grade_name "
-            "FROM aoqi_skin sk "
-            "LEFT JOIN aoqi_skin_grade sg ON sk.grade_code = sg.grade_code "
-            "WHERE sk.skin_id = :skin_id"
-        ),
-        {"skin_id": skin_id},
-    ).mappings().first()
-
-    if base is None:
-        return None
-
-    wearers = db.execute(
-        text(
-            "SELECT ss.race_id, sp.spirit_name, ss.is_base, ss.element_code "
-            "FROM aoqi_spirit_skin ss "
-            "JOIN aoqi_spirit sp ON ss.race_id = sp.race_id "
-            "WHERE ss.skin_id = :skin_id "
-            "ORDER BY ss.is_base DESC, sp.race_id"
-        ),
-        {"skin_id": skin_id},
-    ).mappings().all()
-
-    return SkinDetail(
-        skin_id=base["skin_id"],
-        skin_name=base["skin_name"],
-        grade_code=base["grade_code"],
-        grade_name=base["grade_name"],
-        wearers=[dict(w) for w in wearers],
-    )
 
 
 def get_skin_grades(db: Session) -> List[SkinGrade]:

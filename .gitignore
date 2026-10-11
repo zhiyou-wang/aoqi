@@ -50,3 +50,9 @@ Thumbs.db
 
 # Oracle 凭证
 backend/.env
+
+# 字体（SF Pro 许可仅限 Apple 平台，不提交；缺失时自动回退系统字体）
+frontend/public/fonts/
+
+# 背景动态视频（体积大，不提交，本地保留）
+frontend/public/bg-sunshangxiang.mp4

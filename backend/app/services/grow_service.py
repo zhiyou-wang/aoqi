@@ -1,12 +1,10 @@
 """养成域业务逻辑。"""
 from __future__ import annotations
 
-from typing import List
-
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.schemas.grow import EraGrowItem, GrowConfig, GrowItem, SpiritGrowEntry
+from app.schemas.grow import EraGrowItem, GrowConfig, GrowItem
 
 
 def get_grow_config(db: Session) -> GrowConfig:
@@ -38,17 +36,3 @@ def get_grow_config(db: Session) -> GrowConfig:
         )
 
     return GrowConfig(items=items, era_map=era_map)
-
-
-def get_spirit_grow(db: Session, race_id: int) -> List[SpiritGrowEntry]:
-    """某精灵的养成数据（当前为空，表结构就位）。"""
-    rows = db.execute(
-        text(
-            "SELECT sg.grow_item_code, gi.grow_item_name, sg.grow_value "
-            "FROM aoqi_spirit_grow sg "
-            "JOIN aoqi_grow_item gi ON sg.grow_item_code = gi.grow_item_code "
-            "WHERE sg.race_id = :race_id ORDER BY gi.sort_no"
-        ),
-        {"race_id": race_id},
-    ).mappings().all()
-    return [SpiritGrowEntry(**dict(r)) for r in rows]

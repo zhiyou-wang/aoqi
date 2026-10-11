@@ -124,46 +124,6 @@ export interface SpiritDetail {
   bonds_collect: Array<Record<string, unknown>>;
 }
 
-// ---- 材质配置 ----
-
-/** 材质类型 */
-export type MaterialType =
-  | 'matte'
-  | 'glass'
-  | 'fluted'
-  | 'metal'
-  | 'chrome'
-  | 'frosted';
-
-/** 一组材质参数 */
-export interface MaterialPreset {
-  material: MaterialType;
-  refraction?: number | null;
-  dispersion?: number | null;
-  fresnel?: number | null;
-  rim?: number | null;
-}
-
-/** 稀有度材质 */
-export interface RarityMaterial {
-  rarity_code: number;
-  rarity_name: string;
-  material: MaterialPreset;
-}
-
-/** 皮肤品级材质 */
-export interface SkinGradeMaterial {
-  grade_code: string;
-  grade_name: string;
-  material: MaterialPreset;
-}
-
-/** 材质配置全集 */
-export interface MaterialConfig {
-  rarities: RarityMaterial[];
-  skin_grades: SkinGradeMaterial[];
-}
-
 // ---- 皮肤域 ----
 
 /** 皮肤品级 */
@@ -180,15 +140,6 @@ export interface SkinSummary {
   grade_code: string | null;
   grade_name: string | null;
   wear_count: number;
-}
-
-/** 皮肤详情 */
-export interface SkinDetail {
-  skin_id: number;
-  skin_name: string;
-  grade_code: string | null;
-  grade_name: string | null;
-  wearers: Array<Record<string, unknown>>;
 }
 
 // ---- 羁绊域 ----
@@ -269,11 +220,4 @@ export interface EraGrowItem {
 export interface GrowConfig {
   items: GrowItem[];
   era_map: Record<string, EraGrowItem[]>;
-}
-
-/** 精灵的某条养成数据 */
-export interface SpiritGrowEntry {
-  grow_item_code: string;
-  grow_item_name: string | null;
-  grow_value: string | null;
 }

@@ -34,12 +34,3 @@ def list_skins(
 def grades(db: Session = Depends(get_db)):
     """皮肤品级字典。"""
     return ok(data=[g.model_dump() for g in skin_service.get_skin_grades(db)])
-
-
-@router.get("/{skin_id}")
-def skin_detail(skin_id: int, db: Session = Depends(get_db)):
-    """皮肤详情：含穿戴关系。"""
-    detail = skin_service.get_skin_detail(db, skin_id)
-    if detail is None:
-        return ok(data=None, message="not found")
-    return ok(data=detail.model_dump())

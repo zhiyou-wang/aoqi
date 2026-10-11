@@ -20,7 +20,7 @@ const CATEGORY_NAME: Record<string, string> = {
  * 数据字典来自后端，精灵养成实例数据当前为空（待抽取）。
  */
 export function GrowPage() {
-  const { data: config, loading } = useFetch(fetchGrowConfig, []);
+  const { data: config, loading } = useFetch('grow-config', fetchGrowConfig, []);
 
   const items = config?.data?.items ?? [];
   const eraMap = config?.data?.era_map ?? {};

@@ -3,10 +3,12 @@ import { fetchFilters, fetchSpirits } from '../api/client';
 import { useFetch } from '../lib/useFetch';
 import { SpiritCard } from '../components/SpiritCard';
 import { GlassPanel } from '../components/GlassPanel';
+import { Pagination } from '../components/Pagination';
+import { FilterSearch, FilterSelect } from '../components/FilterControls';
 import type { SpiritSummary } from '../shared';
 
 /**
- * 图鉴列表页：完整筛选（搜索/稀有度/元素/职业/时代/站位）+ 卡片网格 + 材质阶梯。
+ * 图鉴列表页：完整筛选（搜索/稀有度/元素/职业/时代/站位）+ 卡片网格。
  */
 export function SpiritsPage({ onSelect }: { onSelect?: (spirit: SpiritSummary) => void }) {
   const [q, setQ] = useState('');
@@ -18,9 +20,10 @@ export function SpiritsPage({ onSelect }: { onSelect?: (spirit: SpiritSummary) =
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<number | null>(null);
 
-  const { data: filters } = useFetch(fetchFilters, []);
+  const { data: filters } = useFetch('filters', fetchFilters, []);
 
   const { data: list, loading, error } = useFetch(
+    'spirits',
     () =>
       fetchSpirits({
         q: q || undefined,
@@ -37,6 +40,7 @@ export function SpiritsPage({ onSelect }: { onSelect?: (spirit: SpiritSummary) =
 
   const total = list?.meta?.total ?? 0;
   const pages = list?.meta?.pages ?? 0;
+  const resetPage = () => setPage(1);
 
   return (
     <main>
@@ -45,91 +49,64 @@ export function SpiritsPage({ onSelect }: { onSelect?: (spirit: SpiritSummary) =
         <p>
           {loading ? '加载中…' : `共 ${total} 只精灵`} · 稀有度{' '}
           {filters?.data?.rarities.length ?? '—'} 档 · 职业 {filters?.data?.jobs.length ?? '—'} 种 ·
-          元素 {filters?.data?.elements.length ?? '—'} 种
+         元素 {filters?.data?.elements.length ?? '—'} 种
         </p>
       </GlassPanel>
 
       <GlassPanel className="filter-bar">
-        <input
-          className="filter-bar__search"
-          type="search"
-          placeholder="搜索精灵名字…"
+        <FilterSearch
           value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setPage(1);
+          placeholder="搜索精灵名字…"
+          onChange={(v) => {
+            setQ(v);
+            resetPage();
           }}
         />
-        <select
+        <FilterSelect
           value={rarity}
-          onChange={(e) => {
-            setRarity(e.target.value);
-            setPage(1);
+          allLabel="全部稀有度"
+          options={filters?.data?.rarities}
+          onChange={(v) => {
+            setRarity(v);
+            resetPage();
           }}
-        >
-          <option value="">全部稀有度</option>
-          {filters?.data?.rarities.map((r) => (
-            <option key={r.code} value={r.code}>
-              {r.name}
-            </option>
-          ))}
-        </select>
-        <select
+        />
+        <FilterSelect
           value={element}
-          onChange={(e) => {
-            setElement(e.target.value);
-            setPage(1);
+          allLabel="全部元素"
+          options={filters?.data?.elements}
+          onChange={(v) => {
+            setElement(v);
+            resetPage();
           }}
-        >
-          <option value="">全部元素</option>
-          {filters?.data?.elements.map((el) => (
-            <option key={el.code} value={el.code}>
-              {el.name}
-            </option>
-          ))}
-        </select>
-        <select
+        />
+        <FilterSelect
           value={job}
-          onChange={(e) => {
-            setJob(e.target.value);
-            setPage(1);
+          allLabel="全部职业"
+          options={filters?.data?.jobs}
+          onChange={(v) => {
+            setJob(v);
+            resetPage();
           }}
-        >
-          <option value="">全部职业</option>
-          {filters?.data?.jobs.map((j) => (
-            <option key={j.code} value={j.code}>
-              {j.name}
-            </option>
-          ))}
-        </select>
-        <select
+        />
+        <FilterSelect
           value={era}
-          onChange={(e) => {
-            setEra(e.target.value);
-            setPage(1);
+          allLabel="全部时代"
+          options={filters?.data?.eras}
+          onChange={(v) => {
+            setEra(v);
+            resetPage();
           }}
-        >
-          <option value="">全部时代</option>
-          {filters?.data?.eras.map((er) => (
-            <option key={er.code} value={er.code}>
-              {er.name}
-            </option>
-          ))}
-        </select>
-        <select
+        />
+        <FilterSelect
           value={position}
-          onChange={(e) => {
-            setPosition(e.target.value);
-            setPage(1);
+          allLabel="全部站位"
+          options={filters?.data?.positions}
+          onChange={(v) => {
+            setPosition(v);
+            resetPage();
           }}
-        >
-          <option value="">全部站位</option>
-          {filters?.data?.positions.map((p) => (
-            <option key={p.code} value={p.code}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+        />
       </GlassPanel>
 
       {error ? (
@@ -154,19 +131,7 @@ export function SpiritsPage({ onSelect }: { onSelect?: (spirit: SpiritSummary) =
         <div className="state-hint">没有匹配的精灵</div>
       )}
 
-      {pages > 1 && (
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            上一页
-          </button>
-          <span>
-            第 {page} / {pages} 页
-          </span>
-          <button disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>
-            下一页
-          </button>
-        </div>
-      )}
+      <Pagination page={page} pages={pages} onChange={setPage} />
     </main>
   );
 }

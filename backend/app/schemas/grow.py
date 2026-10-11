@@ -1,7 +1,7 @@
 """养成域 Pydantic 契约模型。"""
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -29,11 +29,3 @@ class GrowConfig(BaseModel):
     items: List[GrowItem] = Field(default_factory=list)
     # era_code → 养成项列表
     era_map: dict = Field(default_factory=dict)
-
-
-class SpiritGrowEntry(BaseModel):
-    """精灵的某条养成数据。"""
-
-    grow_item_code: str
-    grow_item_name: Optional[str] = None
-    grow_value: Optional[str] = None

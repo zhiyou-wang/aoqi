@@ -9,13 +9,10 @@ import type {
   BondOverview,
   FilterDict,
   GrowConfig,
-  MaterialConfig,
   RelationOverview,
-  SkinDetail,
   SkinGrade,
   SkinSummary,
   SpiritDetail,
-  SpiritGrowEntry,
   SpiritListQuery,
   SpiritSummary,
 } from '../shared';
@@ -53,11 +50,6 @@ export function fetchSpiritDetail(raceId: number) {
   return request<SpiritDetail>(`/spirits/${raceId}`);
 }
 
-/** 材质配置 */
-export function fetchMaterialConfig() {
-  return request<MaterialConfig>('/material-config');
-}
-
 /** 皮肤列表 */
 export function fetchSkins(params?: { grade?: string; q?: string; page?: number; size?: number }) {
   return request<SkinSummary[]>('/skins', params as Record<string, unknown>);
@@ -66,11 +58,6 @@ export function fetchSkins(params?: { grade?: string; q?: string; page?: number;
 /** 皮肤品级 */
 export function fetchSkinGrades() {
   return request<SkinGrade[]>('/skins/grades');
-}
-
-/** 皮肤详情 */
-export function fetchSkinDetail(skinId: number) {
-  return request<SkinDetail>(`/skins/${skinId}`);
 }
 
 /** 羁绊总览 */
@@ -86,9 +73,4 @@ export function fetchRelations() {
 /** 养成配置 */
 export function fetchGrowConfig() {
   return request<GrowConfig>('/grow/config');
-}
-
-/** 精灵养成数据 */
-export function fetchSpiritGrow(raceId: number) {
-  return request<SpiritGrowEntry[]>(`/grow/${raceId}`);
 }

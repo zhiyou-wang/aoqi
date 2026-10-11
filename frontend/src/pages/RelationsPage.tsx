@@ -7,7 +7,7 @@ import { GlassPanel } from '../components/GlassPanel';
  * 用简单 SVG 力导向近似布局展示关系结构。
  */
 export function RelationsPage() {
-  const { data: relations, loading } = useFetch(fetchRelations, []);
+  const { data: relations, loading } = useFetch('relations', fetchRelations, []);
 
   const groups = relations?.data?.groups ?? [];
   const lines = relations?.data?.lines ?? [];
